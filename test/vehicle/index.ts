@@ -7,6 +7,7 @@ import semver from "semver";
 import { VehicleAPIClient } from "../../src";
 import { CarmenAPIConfigError } from "../../src/";
 import { Locations, VehicleAPIOptions } from "../../src/";
+import { extractAPIVersionFromReadme } from "../utils";
 
 dotenv.config();
 
@@ -157,17 +158,20 @@ describe("VehicleAPIClient", () => {
     expect(isValid).toBe(true);
   });
 
-  it("has a package version that matches the API response version (the patch version can be different)", async () => {
-    const client = new VehicleAPIClient({
-      ...testOptions,
-      services: { mmr: true, anpr: true },
-    });
-    const response = await client.send("./test/vehicle/adr-test.jpg");
-    const clientVersion = semver.parse(client.supportedAPIVersion + '.0');
-    const responseVersion = semver.parse(response.version + '.0');
-    expect(clientVersion?.major).toBe(responseVersion?.major);
-    expect(clientVersion?.minor).toBe(responseVersion?.minor);
+it("has a client version that matches the API response version (the patch version can be different)", async () => {
+  const client = new VehicleAPIClient({
+    ...testOptions,
+    services: { mmr: true, anpr: true },
   });
+  const response = await client.send("./test/vehicle/adr-test.jpg");
+  const clientVersion = semver.parse(client.supportedAPIVersion + '.0');
+  const responseVersion = semver.parse(response.version + '.0');
+  const readmeVersion = semver.parse(extractAPIVersionFromReadme('Vehicle API') + '.0');
+  expect(clientVersion?.major).toBe(responseVersion?.major);
+  expect(clientVersion?.minor).toBe(responseVersion?.minor);
+  expect(clientVersion?.major).toBe(readmeVersion?.major);
+  expect(clientVersion?.minor).toBe(readmeVersion?.minor);
+});
 
   it("works correctly if cloudServiceRegion === 'EU'", async () => {
     const client = new VehicleAPIClient({

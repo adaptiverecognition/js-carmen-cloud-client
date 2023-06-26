@@ -7,6 +7,7 @@ import semver from "semver";
 import { TransportAPIClient } from "../../src";
 import { CarmenAPIConfigError } from "../../src";
 import { CodeType, TransportAPIOptions } from "../../src";
+import { extractAPIVersionFromReadme } from "../utils";
 
 dotenv.config();
 
@@ -199,13 +200,16 @@ describe("TransportAPIClient", () => {
     expect(isValid).toBe(true);
   });
 
-  it("has a package version that matches the API response version (the patch version can be different)", async () => {
+  it("has a client version that matches the API response version and the version in the README", async () => {
     const client = new TransportAPIClient(testOptions);
     const response = await client.send("./test/transport/accr_usa01.jpg");
     const clientVersion = semver.parse(client.supportedAPIVersion + '.0');
     const responseVersion = semver.parse(response.version + '.0');
+    const readmeVersion = semver.parse(extractAPIVersionFromReadme('Transportation & Cargo API') + '.0');
     expect(clientVersion?.major).toBe(responseVersion?.major);
     expect(clientVersion?.minor).toBe(responseVersion?.minor);
+    expect(clientVersion?.major).toBe(readmeVersion?.major);
+    expect(clientVersion?.minor).toBe(readmeVersion?.minor);
   });
 
   it("works correctly if cloudServiceRegion === 'EU'", async () => {

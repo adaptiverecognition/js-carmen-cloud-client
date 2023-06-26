@@ -38,6 +38,9 @@ This will run the tests in the `test` directory. Please make sure that you have 
   client classes (`VehicleAPIClient` and `TransportAPIClient`) match the version 
   numbers returned by the respective APIs. This test case will fail if the 
   version number is not updated.
+- Please also pay attention to the version numbers in the README.md file. The
+  version numbers in the README.md file should be updated to match the version
+  numbers in the `supportedAPIVersion` properties of the client classes.
 - After the version has been updated, run `npm publish --access public` to
   publish the new version to npm. (You need to be logged in to npm for this to
   work.)

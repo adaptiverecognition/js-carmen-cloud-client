@@ -13,7 +13,8 @@ module.exports = {
     ],
     testPathIgnorePatterns: [
       'dist.*\\.ts$',
-      'test-data\.ts'
+      'test-data\.ts',
+      'test/utils.ts',
     ]
   }
   
