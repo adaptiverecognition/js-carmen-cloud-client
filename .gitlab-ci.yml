@@ -1,0 +1,87 @@
+stages:
+  - install
+  - lint
+  - build
+  - test
+
+default:
+  image: gitlab.ar.local:5050/arcloud/docker-images/gitlab-runner:node-16
+
+variables:
+  GITLAB_USER: $GITLAB_USER
+  GITLAB_ACCESS_TOKEN: $GITLAB_ACCESS_TOKEN
+  CI_COMMIT_BRANCH: $CI_COMMIT_BRANCH
+  TEST_DEV_API_KEY: $API_TEST_EU_API_KEY_DEV
+  TEST_EU_PROD_API_KEY: $API_TEST_EU_API_KEY_PROD
+  TEST_US_PROD_API_KEY: $API_TEST_US_API_KEY_PROD
+  TEST_DEV_ENDPOINT_URL: $TEST_DEV_ENDPOINT_URL
+  AWS_EU_PROFILE_NAME: $AWS_EU_PROFILE_NAME
+  AWS_EU_ACCESS_KEY_ID: $AWS_EU_ACCESS_KEY_ID
+  AWS_EU_DEFAULT_REGION: $AWS_EU_DEFAULT_REGION
+  AWS_EU_SECRET_ACCESS_KEY: $AWS_EU_SECRET_ACCESS_KEY
+  AWS_US_PROFILE_NAME: $AWS_US_PROFILE_NAME
+  AWS_US_ACCESS_KEY_ID: $AWS_US_ACCESS_KEY_ID
+  AWS_US_DEFAULT_REGION: $AWS_US_DEFAULT_REGION
+  AWS_US_SECRET_ACCESS_KEY: $AWS_US_SECRET_ACCESS_KEY
+
+install:
+  stage: install
+  allow_failure: false
+  cache:
+    key: $CI_COMMIT_REF_SLUG-$CI_PROJECT_DIR
+    paths:
+      - node_modules/
+    policy: push
+  script:
+    - npm ci
+
+lint:
+  stage: lint
+  allow_failure: false
+  needs: [install]
+  cache:
+    key: $CI_COMMIT_REF_SLUG-$CI_PROJECT_DIR
+    paths:
+      - node_modules/
+    policy: pull
+  script:
+    - npm run lint
+
+build:
+  stage: build
+  allow_failure: false
+  needs: [lint]
+  cache:
+    key: $CI_COMMIT_REF_SLUG-$CI_PROJECT_DIR
+    paths:
+      - node_modules/
+      - dist/
+    policy: pull-push
+  script:
+    - npm run build
+
+test:
+  stage: test
+  needs: [build]
+  allow_failure: false
+  cache:
+    key: $CI_COMMIT_REF_SLUG-$CI_PROJECT_DIR
+    paths:
+      - node_modules/
+      - dist/
+      - coverage/
+    policy: pull-push
+  coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
+  script:
+    - npm run test:ci
+    - mkdir .public
+    - cp -r coverage/* .public
+    - mv .public public
+  artifacts:
+    when: always
+    paths:
+      - public
+    reports:
+      junit:
+        - junit.xml
+      cobertura: coverage/cobertura-coverage.xml

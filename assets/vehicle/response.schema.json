@@ -1,0 +1,437 @@
+{
+    "$schema" : "http://json-schema.org/draft-04/schema#",
+    "title": "Vehicle API Response",
+    "description": "Response object returned by the Vehicle API on successful execution.",
+    "type" : "object",
+    "properties" : {
+        "*engines": {
+            "type": "array",
+            "description": "Includes the names of the recognition engines that successfully processed the request. (*Removed since version 1.3.*)",
+			"items": {
+                "type": "string"
+			}
+        },
+        "nodename": {
+            "type": "string",
+            "description": "The name of the node this request has been processed by. This is diagnostic information to be included in error reports."
+        },
+        "nodetime": {
+            "type": "number",
+            "description": "Total processing time spent on the worker node (includes processing, image loading and latency)."
+        },
+        "version": {
+            "type": "string",
+            "description": "The version of the API that returned the response. Incremented each time the response structure changes."
+        },
+        "data" : { 
+            "type" : "object" ,
+			"description": "The recognition results.",
+            "properties" : {
+                "vehicles" : { 
+                    "type" : "array",
+					"description": "The recognition results returned by each recognition service specified for the vehicles detected in the image (**plate** for *anpr*, **mmr** for *mmr*, and **markings** for *adr* service).",
+                    "items" : {
+                        "type" : "object" ,
+                        "properties" : {
+                            "bounds": {
+                                "type" : "object",
+								"description": "The bounds of the vehicle. (*Available since version 1.3.*)",
+                                "properties" : {
+									"extendedPlateFrame": {
+										"type" : "object",
+										"description": "The coordinates of the license plate extension, on the basis of which the vehicle type can be determined.",
+										"properties" : {
+                                            "bottomLeft" : {
+                                                "type" : "object" ,
+												"description": "The bottom left corner of the rectangle.",
+                                                "properties" : {
+                                                    "x" : { "type" : "integer", "description": "x coordinate" },
+                                                    "y" : { "type" : "integer", "description": "y coordinate" }
+                                                }
+                                            },
+                                            "bottomRight" : {
+                                                "type" : "object" ,
+												"description": "The bottom right corner of the rectangle.",
+                                                "properties" : {
+                                                    "x" : { "type" : "integer", "description": "x coordinate" },
+                                                    "y" : { "type" : "integer", "description": "y coordinate" }
+                                                }
+                                            },
+                                            "topLeft" : {
+                                                "type" : "object" ,
+												"description": "The top left corner of the rectangle.",
+                                                "properties" : {
+                                                    "x" : { "type" : "integer", "description": "x coordinate" },
+                                                    "y" : { "type" : "integer", "description": "y coordinate" }
+                                                }
+                                            },
+                                            "topRight" : {
+                                                "type" : "object" ,
+												"description": "The top right corner of the rectangle.",
+                                                "properties" : {
+                                                    "x" : { "type" : "integer", "description": "x coordinate" },
+                                                    "y" : { "type" : "integer", "description": "y coordinate" }
+                                                }
+                                            }
+										}
+									},
+									"vehicleFrame": {
+										"type" : "object",
+										"description": "The coordinates of the vehicle if provided by the MMR engine.",
+										"properties" : {
+                                            "bottomLeft" : {
+                                                "type" : "object" ,
+												"description": "The bottom left corner of the rectangle.",
+                                                "properties" : {
+                                                    "x" : { "type" : "integer", "description": "x coordinate" },
+                                                    "y" : { "type" : "integer", "description": "y coordinate" }
+                                                }
+                                            },
+                                            "bottomRight" : {
+                                                "type" : "object" ,
+												"description": "The bottom right corner of the rectangle.",
+                                                "properties" : {
+                                                    "x" : { "type" : "integer", "description": "x coordinate" },
+                                                    "y" : { "type" : "integer", "description": "y coordinate" }
+                                                }
+                                            },
+                                            "topLeft" : {
+                                                "type" : "object" ,
+												"description": "The top left corner of the rectangle.",
+                                                "properties" : {
+                                                    "x" : { "type" : "integer", "description": "x coordinate" },
+                                                    "y" : { "type" : "integer", "description": "y coordinate" }
+                                                }
+                                            },
+                                            "topRight" : {
+                                                "type" : "object" ,
+												"description": "The top right corner of the rectangle.",
+                                                "properties" : {
+                                                    "x" : { "type" : "integer", "description": "x coordinate" },
+                                                    "y" : { "type" : "integer", "description": "y coordinate" }
+                                                }
+                                            }
+										}
+									}
+								}
+							},
+                            "mmr": {
+                                "type" : "object",
+								"description": "The make, model and color of the vehicle.",
+                                "properties" : {
+                                    "found": { "type" : "boolean", "description": "True if an MMR engine found mmr information in the image, otherwise false. (*Available since version 1.2.*)" },
+                                    "engine": { "type" : "string", "description": "The name of the MMR engine that successfully processed this vehicle. (*Available since version 1.3.*)" },
+                                    "category": { "type" : "string", "description": "The vehicle’s category." },
+                                    "categoryConfidence": { "type" : "integer", "description": "The confidence level of the vehicle category recognition.", "minimum": 0, "maximum": 100 },
+                                    "heading": { "type" : "string", "description": "**DEPRECATED:** The vehicle’s view (frontal or rear). (*Available since version 1.2.*)" },
+                                    "headingConfidence": { "type" : "integer", "description": "**DEPRECATED:** The confidence level of the view recognition. (*Available since version 1.2.*)", "minimum": 0, "maximum": 100 },
+                                    "color": { 
+                                        "type" : "object",
+										"description": "The vehicle’s color.",
+                                        "properties" : {
+                                            "b": { "type" : "integer", "description": "the blue component of the color", "minimum": 0, "maximum": 255 },
+                                            "g": { "type" : "integer", "description": "the green component of the color", "minimum": 0, "maximum": 255 },
+                                            "r": { "type" : "integer", "description": "the red component of the color", "minimum": 0, "maximum": 255 }
+                                        }
+                                    },
+                                    "colorConfidence": { "type" : "integer", "description": "The confidence level of the vehicle color recognition.", "minimum": 0, "maximum": 100 },
+                                    "colorName": { "type" : "string", "description": "The vehicle’s color as a string. The value is 'GRAYSCALE' for grayscale input images." },
+                                    "make": { "type" : "string", "description": "The make/brand of the vehicle." },
+                                    "makeConfidence": { "type" : "integer", "description": "The confidence level of  vehicle make recognition. (*Available since version 1.2.*)", "minimum": 0, "maximum": 100 },
+                                    "model": { "type" : "string", "description": "The model type of a vehicle." },
+                                    "modelConfidence": { "type" : "integer", "description": "The confidence level of the vehicle model recognition. (*Available since version 1.2.*)", "minimum": 0, "maximum": 100 },
+                                    "*makeAndModelConfidence": { "type" : "integer", "description": "The confidence level of the vehicle make and model recognition. (*Removed since version 1.2.*)", "minimum": 0, "maximum": 100 },
+                                    "*submodel": { "type" : "string", "description": "The submodel type of a vehicle. (*Removed since version 1.2.*)" },
+                                    "proctime": { "type" : "integer", "description": "The running time of the engine in milliseconds." },
+                                    "bodyType": { "type" : "string", "description": "The body type of the vehicle. E.g. 'sedan', 'SUV', 'hatchback', etc. (*Available since version 1.4.*)" },
+                                    "bodyTypeConfidence": { "type" : "integer", "description": "The confidence level of the body type recognition. (*Available since version 1.4.*)", "minimum": 0, "maximum": 100 },
+                                    "viewPoint": { "type" : "string", "description": "The orientation of the vehicle in the image. Available values: `rear`, `front`, `rear_side`, `front_side`, `side`. (*Available since version 1.4.*)" },
+                                    "viewPointConfidence": { "type" : "integer", "description": "The confidence level of the view point recognition. (*Available since version 1.4.*)", "minimum": 0, "maximum": 100 },
+                                    "imageTooltips": { "type" : "array", "items": [ { "type": "string" } ], "description": "A list of hints that help improve recognition accuracy. (*Available since version 1.4.*)" },
+                                    "frameTooltips": { "type" : "array", "items": [ { "type": "string" } ], "description": "A list of hints that help improve recognition accuracy. (*Available since version 1.4.*)" }
+                                }               
+                            },                
+                            "plate" : {
+                                "type" : "object",
+								"description": "The recognized license plate.",
+                                "properties" : {
+                                    "found": { "type" : "boolean", "description": "True if an ANPR engine found plate information in the image, otherwise false. (*Available since version 1.2.*)" },
+                                    "engine": { "type" : "string", "description": "The name of the ANPR engine that successfully processed this vehicle. (*Available since version 1.3.*)" },
+                                    "bgDark": { "type" : "boolean", "description": "Indicates whether the license plate has a dark background color. Only returned if the engine does not support color analysis. (*Available since version 1.4.*)" },
+                                    "bgColor": { 
+                                        "type" : "object",
+										"description": "The color of the license plate background if provided by the ANPR engine, can be white or black. This also means that the engine does not give yellow to taxis and green to electric cars, but white. The color is specified by an RGB (red-green-blue) code which properties (r, g, and b respectively) are integer numbers between 0 and 255.",
+                                        "properties" : {
+                                            "b": { "type" : "integer", "description": "the blue component of the color", "minimum": 0, "maximum": 255 },
+                                            "g": { "type" : "integer", "description": "the green component of the color", "minimum": 0, "maximum": 255 },
+                                            "r": { "type" : "integer", "description": "the red component of the color", "minimum": 0, "maximum": 255 }
+                                        }
+                                    },
+                                    "daColor": { 
+                                        "type" : "object",
+										"description": "The dedicated area color if provided by the ANPR engine. (*Available since version 1.2.*)",
+                                        "properties" : {
+                                            "b": { "type" : "integer", "description": "the blue component of the color", "minimum": 0, "maximum": 255 },
+                                            "g": { "type" : "integer", "description": "the green component of the color", "minimum": 0, "maximum": 255 },
+                                            "r": { "type" : "integer", "description": "the red component of the color", "minimum": 0, "maximum": 255 }
+                                        }
+                                    },
+                                    "color": { 
+                                        "type" : "object",
+										"description": "The color of the license plate foreground if provided by the ANPR engine.",
+                                        "properties" : {
+                                            "b": { "type" : "integer", "description": "the blue component of the color", "minimum": 0, "maximum": 255 },
+                                            "g": { "type" : "integer", "description": "the green component of the color", "minimum": 0, "maximum": 255 },
+                                            "r": { "type" : "integer", "description": "the red component of the color", "minimum": 0, "maximum": 255 }
+                                        }
+                                    },
+                                    "plateHeight" : { "type" : "integer", "description": "The estimated height (in millimeters) of the license plate. (*Available since version 1.4.*)" },
+                                    "plateWidth" : { "type" : "integer", "description": "The estimated width (in millimeters) of the license plate. (*Available since version 1.4.*)" },
+                                    "confidence" : { "type" : "integer", "description": "Overall confidence of the license plate calculated from plate type, position, and character confidence values.", "minimum": 0, "maximum": 100 },
+                                    "plateTypeConfidence" : { "type" : "integer", "description": "Confidence of the license plate type. (*Available since version 1.1.*)", "minimum": 0, "maximum": 100 },
+                                    "positionConfidence" : { "type" : "integer", "description": "Confidence of the license plate position. (*Available since version 1.1.*)", "minimum": 0, "maximum": 100 },
+                                    "proctime" : { "type" : "integer", "description": "The running time of the engine in milliseconds." },
+                                    "category" : { "type" : "string", "description": "The category of the license plate. (*Available since version 1.1.*) For the list of possible values please refer to the [Carmen ANPR Reference Manual](https://adaptiverecognition.com/app/uploads/DOC/Software/Carmen/ANPR/carmen_anpr_reference_manual.pdf)" },
+                                    "country" : { "type" : "string", "description": "The nationality of the license plate. For a list of possible values please refer to [this table](/docs/content/references/countries)." },
+                                    "state" : { "type" : "string", "description": "Where it makes sense, the code of the state, county or region." },
+                                    "plateType" : { "type" : "integer", "description": "The Adaptive Recognition type code of the table. For a list of possible values please refer to the [Carmen ANPR Reference Manual](https://adaptiverecognition.com/app/uploads/DOC/Software/Carmen/ANPR/carmen_anpr_reference_manual.pdf)." },
+                                    "plateSizeSource" : { "type" : "string", "description": "If present, indicates whether the plate size has been determined based on the plate type (`database`) or using a statistical estimation (`statistical`). If a plate size has not been returned, this property is missing." },
+                                    "separatedText" : { "type" : "string", "description": "The recognized text of the license plate with gap symbols as it is visible on the plate (<b>*</b> for crest, **¶** for new row, **space** for space, **|** for vertical line, **-** for hyphen, and **(** **)** for begin end symbol of small characters. *Available since version 1.3.*)" },
+                                    "unicodeText" : { "type" : "string", "description": "The recognized text of the license plate." },
+                                    "plateROI" : { 
+                                        "type" : "object",
+										"description": "The coordinates of the license plate found.",
+                                        "properties" : {
+                                            "bottomLeft" : {
+                                                "type" : "object" ,
+												"description": "The bottom left corner of the rectangle.",
+                                                "properties" : {
+                                                    "x" : { "type" : "integer", "description": "x coordinate" },
+                                                    "y" : { "type" : "integer", "description": "y coordinate" }
+                                                }
+                                            },
+                                            "bottomRight" : {
+                                                "type" : "object" ,
+												"description": "The bottom right corner of the rectangle.",
+                                                "properties" : {
+                                                    "x" : { "type" : "integer", "description": "x coordinate" },
+                                                    "y" : { "type" : "integer", "description": "y coordinate" }
+                                                }
+                                            },
+                                            "topLeft" : {
+                                                "type" : "object" ,
+												"description": "The top left corner of the rectangle.",
+                                                "properties" : {
+                                                    "x" : { "type" : "integer", "description": "x coordinate" },
+                                                    "y" : { "type" : "integer", "description": "y coordinate" }
+                                                }
+                                            },
+                                            "topRight" : {
+                                                "type" : "object" ,
+												"description": "The top right corner of the rectangle.",
+                                                "properties" : {
+                                                    "x" : { "type" : "integer", "description": "x coordinate" },
+                                                    "y" : { "type" : "integer", "description": "y coordinate" }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "plateChars" : { 
+                                        "type" : "array",
+										"description": "An array of read characters, including character structures.",
+                                        "items" : {
+                                            "type" : "object" ,
+                                            "properties" : {
+                                                "code" : { "type" : "integer", "description": "The numeric code of the character." },
+                                                "bgDark": { "type" : "boolean", "description": "Indicates whether the character has a dark background color. Only returned if the engine does not support color analysis. (*Available since version 1.4.*)" },
+                                                "bgColor": { 
+                                                    "type" : "object",
+													"description": "The background color of the character.",
+                                                    "properties" : {
+                                                        "b": { "type" : "integer", "description": "the blue component of the color", "minimum": 0, "maximum": 255 },
+                                                        "g": { "type" : "integer", "description": "the green component of the color", "minimum": 0, "maximum": 255 },
+                                                        "r": { "type" : "integer", "description": "the red component of the color", "minimum": 0, "maximum": 255 }
+                                                    }
+                                                },
+                                                "color": { 
+                                                    "type" : "object",
+													"description": "The color of the character.",
+                                                    "properties" : {
+                                                        "b": { "type" : "integer", "description": "the blue component of the color", "minimum": 0, "maximum": 255 },
+                                                        "g": { "type" : "integer", "description": "the green component of the color", "minimum": 0, "maximum": 255 },
+                                                        "r": { "type" : "integer", "description": "the red component of the color", "minimum": 0, "maximum": 255 }
+                                                    }
+                                                },
+                                                "confidence" : { "type" : "integer", "description": "The engine's confidence for the character.", "minimum": 0, "maximum": 100 },
+                                                "charROI" : { 
+                                                    "type" : "object",
+													"description": "The coordinates of the given character.",
+                                                    "properties" : {
+                                                        "bottomLeft" : {
+                                                            "type" : "object" ,
+                                                            "description": "The bottom left corner of the rectangle.",
+                                                            "properties" : {
+                                                                "x" : { "type" : "integer", "description": "x coordinate" },
+                                                                "y" : { "type" : "integer", "description": "y coordinate" }
+                                                            }
+                                                        },
+                                                        "bottomRight" : {
+                                                            "type" : "object" ,
+                                                            "description": "The bottom right corner of the rectangle.",
+                                                            "properties" : {
+                                                                "x" : { "type" : "integer", "description": "x coordinate" },
+                                                                "y" : { "type" : "integer", "description": "y coordinate" }
+                                                            }
+                                                        },
+                                                        "topLeft" : {
+                                                            "type" : "object" ,
+                                                            "description": "The top left corner of the rectangle.",
+                                                            "properties" : {
+                                                                "x" : { "type" : "integer", "description": "x coordinate" },
+                                                                "y" : { "type" : "integer", "description": "y coordinate" }
+                                                            }
+                                                        },
+                                                        "topRight" : {
+                                                            "type" : "object" ,
+                                                            "description": "The top right corner of the rectangle.",
+                                                            "properties" : {
+                                                                "x" : { "type" : "integer", "description": "x coordinate" },
+                                                                "y" : { "type" : "integer", "description": "y coordinate" }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+							"markings" : { 
+								"type" : "array",
+								"description": "The markings found on the vehicle. (*Available since version 1.3.*)",
+								"items" : {
+									"type" : "object" ,
+									"properties" : {
+										"engine": { "type" : "string", "description": "The name of the ANPR engine that successfully processed this marking." },
+										"confidence" : { "type" : "integer", "description": "Overall confidence of the plate.", "minimum": 0, "maximum": 100 },
+										"plateTypeConfidence" : { "type" : "integer", "description": "Confidence of the plate type. (*Not provided for eADR and A plates*)", "minimum": 0, "maximum": 100 },
+										"positionConfidence" : { "type" : "integer", "description": "Confidence of the plate position. (*Not provided for eADR and A plates*)", "minimum": 0, "maximum": 100 },
+										"proctime" : { "type" : "integer", "description": "The running time of the engine in milliseconds." },
+										"plateType" : { "type" : "integer", "description": "The Adaptive Recognition type code of the table. For a list of possible values please refer to the [Carmen ANPR Reference Manual](https://adaptiverecognition.com/app/uploads/DOC/Software/Carmen/ANPR/carmen_anpr_reference_manual.pdf)." },
+										"type" : { "type" : "string", "description": "The type of the table. **ADR** for ADR plates, **E** for empty ADR plates, **AP** for A plates, and **IMO** for IMO plates" },
+										"unicodeText" : { "type" : "string", "description": "The recognized text of the ADR plate or a textual representation of the IMO plate." },
+										"plateROI" : { 
+											"type" : "object",
+											"description": "The coordinates of the plate found.",
+											"properties" : {
+												"bottomLeft" : {
+													"type" : "object" ,
+													"description": "The bottom left corner of the rectangle.",
+													"properties" : {
+														"x" : { "type" : "integer", "description": "x coordinate" },
+														"y" : { "type" : "integer", "description": "y coordinate" }
+													}
+												},
+												"bottomRight" : {
+													"type" : "object" ,
+													"description": "The bottom right corner of the rectangle.",
+													"properties" : {
+														"x" : { "type" : "integer", "description": "x coordinate" },
+														"y" : { "type" : "integer", "description": "y coordinate" }
+													}
+												},
+												"topLeft" : {
+													"type" : "object" ,
+													"description": "The top left corner of the rectangle.",
+													"properties" : {
+														"x" : { "type" : "integer", "description": "x coordinate" },
+														"y" : { "type" : "integer", "description": "y coordinate" }
+													}
+												},
+												"topRight" : {
+													"type" : "object" ,
+													"description": "The top right corner of the rectangle.",
+													"properties" : {
+														"x" : { "type" : "integer", "description": "x coordinate" },
+														"y" : { "type" : "integer", "description": "y coordinate" }
+													}
+												}
+											}
+										},
+										"plateChars" : { 
+											"type" : "array",
+											"description": "An array of read characters, including character structures. (*Not provided for IMO, eADR and A plates*)",
+											"items" : {
+												"type" : "object" ,
+												"properties" : {
+													"code" : { "type" : "integer", "description": "The numeric code of the character." },
+													"bgColor": { 
+														"type" : "object",
+														"description": "The background color of the character.",
+														"properties" : {
+															"b": { "type" : "integer", "description": "the blue component of the color", "minimum": 0, "maximum": 255 },
+															"g": { "type" : "integer", "description": "the green component of the color", "minimum": 0, "maximum": 255 },
+															"r": { "type" : "integer", "description": "the red component of the color", "minimum": 0, "maximum": 255 }
+														}
+													},
+													"color": { 
+														"type" : "object",
+														"description": "The color of the character.",
+														"properties" : {
+															"b": { "type" : "integer", "description": "the blue component of the color", "minimum": 0, "maximum": 255 },
+															"g": { "type" : "integer", "description": "the green component of the color", "minimum": 0, "maximum": 255 },
+															"r": { "type" : "integer", "description": "the red component of the color", "minimum": 0, "maximum": 255 }
+														}
+													},
+													"confidence" : { "type" : "integer", "description": "The engine's confidence for the character.", "minimum": 0, "maximum": 100 },
+													"charROI" : { 
+														"type" : "object",
+														"description": "The coordinates of the given character.",
+														"properties" : {
+															"bottomLeft" : {
+																"type" : "object" ,
+																"description": "The bottom left corner of the rectangle.",
+																"properties" : {
+																	"x" : { "type" : "integer", "description": "x coordinate" },
+																	"y" : { "type" : "integer", "description": "y coordinate" }
+																}
+															},
+															"bottomRight" : {
+																"type" : "object" ,
+																"description": "The bottom right corner of the rectangle.",
+																"properties" : {
+																	"x" : { "type" : "integer", "description": "x coordinate" },
+																	"y" : { "type" : "integer", "description": "y coordinate" }
+																}
+															},
+															"topLeft" : {
+																"type" : "object" ,
+																"description": "The top left corner of the rectangle.",
+																"properties" : {
+																	"x" : { "type" : "integer", "description": "x coordinate" },
+																	"y" : { "type" : "integer", "description": "y coordinate" }
+																}
+															},
+															"topRight" : {
+																"type" : "object" ,
+																"description": "The top right corner of the rectangle.",
+																"properties" : {
+																	"x" : { "type" : "integer", "description": "x coordinate" },
+																	"y" : { "type" : "integer", "description": "y coordinate" }
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

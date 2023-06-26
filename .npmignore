@@ -1,0 +1,12 @@
+/src
+/test
+/.gitignore
+/.editorconfig
+/jest.config.js
+/.env
+/.env.example
+/.nvmrc
+/DEVELOPMENT.md
+/tsconfig.json
+/.gitlab-ci.yml
+/coverage

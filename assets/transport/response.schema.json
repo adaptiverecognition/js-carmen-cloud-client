@@ -1,0 +1,240 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Transportation & Cargo API Response",
+  "description": "Response object returned by the Transportation & Cargo API on successful execution.",
+  "type": "object",
+  "properties": {
+    "nodename": {
+      "type": "string",
+      "title": "Node Name",
+      "description": "Name of the worker node that generated the response."
+    },
+    "nodetime": {
+      "type": "number",
+      "title": "Node Time",
+      "description": "The time, in milliseconds, it took to generate the response."
+    },
+    "version": {
+      "type": "string",
+      "title": "API version",
+      "description": "The version of the API that returned the response."
+    },
+    "data": {
+      "type": "object",
+      "title": "Image Recognition Result",
+      "description": "An object containing the results of the OCR operation.",
+      "properties": {
+        "codes": {
+          "type": "array",
+          "title": "Codes",
+          "description": "An array containing all codes recognized on the images uploaded.",
+          "items": {
+            "type": "object",
+            "title": "Code",
+            "description": "An object representing a code recognized by the OCR engine.",
+            "properties": {
+              "code": {
+                "type": "string",
+                "title": "Code",
+                "description": "The code as a string."
+              },
+              "confidence": {
+                "type": "integer",
+                "title": "Confidence",
+                "description": "The estimated probability of the recognized code being correct as a percentage between 0 and 100.",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "imageResults": {
+                "type": "array",
+                "title": "Image Results",
+                "description": "An array in which each item corresponds to one image uploaded. The items are objects that describe the recognition results found on their respective input images.",
+                "items": {
+                  "type": "object",
+                  "title": "Image Result",
+                  "description": "An object that describes the recognition results found on an uploaded image.",
+                  "properties": {
+                    "found": {
+                      "type": "boolean",
+                      "title": "Found",
+                      "description": "A boolean indicating whether a code has been found on the image."
+                    },
+                    "text": {
+                      "type": "string",
+                      "title": "Text",
+                      "description": "The code found on the image as a string."
+                    },
+                    "confidence": {
+                      "type": "integer",
+                      "title": "Confidence",
+                      "description": "The estimated probability of the recognized code being correct as a percentage between 0 and 100."
+                    },
+                    "characters": {
+                      "type": "array",
+                      "title": "Characters",
+                      "description": "An array of objects which describe each character of the recognized code.",
+                      "items": {
+                        "type": "object",
+                        "title": "Character",
+                        "description": "An object containing the recognition results associated with a single character of the recognized code.",
+                        "properties": {
+                          "code": {
+                            "type": "integer",
+                            "title": "Code",
+                            "description": "The numeric code of the character."
+                          },
+                          "bgDark": {
+                            "type": "boolean",
+                            "title": "Dark Background",
+                            "description": "A boolean indicating whether the background is darker than the character found."
+                          },
+                          "bgColor": {
+                            "type": "object",
+                            "title": "Background Color",
+                            "description": "The color of the background of the character.",
+                            "properties": {
+                              "b": {
+                                "type": "integer",
+                                "title": "Blue",
+                                "description": "The blue component of the color, 0-255.",
+                                "minimum": 0,
+                                "maximum": 255
+                              },
+                              "g": {
+                                "type": "integer",
+                                "title": "Green",
+                                "description": "The green component of the color, 0-255.",
+                                "minimum": 0,
+                                "maximum": 255
+                              },
+                              "r": {
+                                "type": "integer",
+                                "title": "Red",
+                                "description": "The red component of the color, 0-255.",
+                                "minimum": 0,
+                                "maximum": 255
+                              }
+                            }
+                          },
+                          "color": {
+                            "type": "object",
+                            "title": "Text Color",
+                            "description": "The color of the character.",
+                            "properties": {
+                              "b": {
+                                "type": "integer",
+                                "title": "Blue",
+                                "description": "The blue component of the color, 0-255.",
+                                "minimum": 0,
+                                "maximum": 255
+                              },
+                              "g": {
+                                "type": "integer",
+                                "title": "Green",
+                                "description": "The green component of the color, 0-255.",
+                                "minimum": 0,
+                                "maximum": 255
+                              },
+                              "r": {
+                                "type": "integer",
+                                "title": "Red",
+                                "description": "The red component of the color, 0-255.",
+                                "minimum": 0,
+                                "maximum": 255
+                              }
+                            }
+                          },
+                          "confidence": {
+                            "type": "integer",
+                            "title": "Confidence",
+                            "description": "The estimated probability of the recognized character being correct as a percentage between 0 and 100."
+                          },
+                          "charROI": {
+                            "type": "object",
+                            "title": "Character Region of Interest",
+                            "description": "The quadrangle (not necessarily a rectangle) where the character has been found.",
+                            "properties": {
+                              "bottomLeft": {
+                                "type": "object",
+                                "title": "Bottom Left",
+                                "description": "Coordinates of the bottom left corner of the region in the uploaded image.",
+                                "properties": {
+                                  "x": {
+                                    "type": "integer",
+                                    "title": "X coordinate",
+                                    "description": "The X coordinate of the corner."
+                                  },
+                                  "y": {
+                                    "type": "integer",
+                                    "title": "Y coordinate",
+                                    "description": "The Y coordinate of the corner."
+                                  }
+                                }
+                              },
+                              "bottomRight": {
+                                "type": "object",
+                                "title": "Bottom Right",
+                                "description": "Coordinates of the bottom right corner of the region in the uploaded image.",
+                                "properties": {
+                                  "x": {
+                                    "type": "integer",
+                                    "title": "X coordinate",
+                                    "description": "The X coordinate of the corner."
+                                  },
+                                  "y": {
+                                    "type": "integer",
+                                    "title": "Y coordinate",
+                                    "description": "The Y coordinate of the corner."
+                                  }
+                                }
+                              },
+                              "topLeft": {
+                                "type": "object",
+                                "title": "Top Left",
+                                "description": "Coordinates of the top left corner of the region in the uploaded image.",
+                                "properties": {
+                                  "x": {
+                                    "type": "integer",
+                                    "title": "X coordinate",
+                                    "description": "The X coordinate of the corner."
+                                  },
+                                  "y": {
+                                    "type": "integer",
+                                    "title": "Y coordinate",
+                                    "description": "The Y coordinate of the corner."
+                                  }
+                                }
+                              },
+                              "topRight": {
+                                "type": "object",
+                                "title": "Top Right",
+                                "description": "Coordinates of the top right corner of the region in the uploaded image.",
+                                "properties": {
+                                  "x": {
+                                    "type": "integer",
+                                    "title": "X coordinate",
+                                    "description": "The X coordinate of the corner."
+                                  },
+                                  "y": {
+                                    "type": "integer",
+                                    "title": "Y coordinate",
+                                    "description": "The Y coordinate of the corner."
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
