@@ -20,7 +20,7 @@ You can utilize either the Vehicle API or the Transportation & Cargo API based o
 ### 🚗 Vehicle API
 
 ```typescript
-import { VehicleClient, Locations } from "@adaptive-recognition/carmen-cloud-client";
+import { VehicleAPIClient, Locations } from "@adaptive-recognition/carmen-cloud-client";
 
 const vehicleClient = new VehicleAPIClient({
     apiKey: "<YOUR_API_KEY>",
@@ -42,7 +42,7 @@ recognizeVehicle()
 ### 🚚 Transport API
 
 ```typescript
-import { TransportClient } from "@adaptive-recognition/carmen-cloud-client";
+import { TransportAPIClient } from "@adaptive-recognition/carmen-cloud-client";
 
 const transportClient = new TransportAPIClient({
     apiKey: "<YOUR_API_KEY>",
