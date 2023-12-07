@@ -1,6 +1,6 @@
 # Carmen Cloud Client by Adaptive Recognition
 
-JavaScript/TypeScript client for [Carmen Cloud](https://cloud.adaptiverecognition.com/) by [Adaptive Recognition](https://adaptiverecognition.com/). This unified library provides you with access to both the **Vehicle API** and the **Transportation & Cargo API**.
+JavaScript/TypeScript client for [Carmen Cloud](https://carmencloud.com/) by [Adaptive Recognition](https://adaptiverecognition.com/). This unified library provides you with access to both the **Vehicle API** and the **Transportation & Cargo API**.
 
 ## Supported API Versions
 
