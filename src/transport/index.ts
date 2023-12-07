@@ -10,7 +10,7 @@ import { TransportationCargoAPIResponse } from "./response";
 import { Stream } from "stream";
  
 export class TransportAPIClient {
-  supportedAPIVersion = "1.0";
+  supportedAPIVersion = "1.0.1";
   private apiUrl: string;
 
   constructor(private options: TransportAPIOptions) {
@@ -108,13 +108,17 @@ export class TransportAPIClient {
       return this.options.endpoint;
     }
     if (this.options.cloudServiceRegion === "EU") {
-      return "https://api.cloud.adaptiverecognition.com";
+      return "https://eu-central-1.api.carmencloud.com";
     }
     if (this.options.cloudServiceRegion === "US") {
-      return "https://api.us.cloud.adaptiverecognition.com";
+      return "https://us-east-1.api.carmencloud.com";
     }
-    throw new CarmenAPIConfigError(
-      "Either 'endpoint' or 'cloudServiceRegion' must be specified."
-    );
+    if (this.options.cloudServiceRegion && this.options.cloudServiceRegion !== "AUTO") {
+      throw new CarmenAPIConfigError(
+        `Invalid cloud service region: '${this.options.cloudServiceRegion}'.`
+      );
+    }
+    // cloudServiceRegion is not set or AUTO, use latency-based routing
+    return "https://api.carmencloud.com";
   }
 }

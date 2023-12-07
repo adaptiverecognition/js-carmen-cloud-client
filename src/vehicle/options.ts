@@ -15,11 +15,11 @@ export interface VehicleAPIOptions {
   endpoint?: string;
 
   /**
-   * The cloud service region to use - `"EU"` for Europe
-   * and `"US"` for the United States. Has no effect if
-   * `endpoint` is also set.
+   * The cloud service region to use - `"AUTO"` for latency-based
+   * automatic routing (default), `"EU"` for Europe and `"US"` for
+   * the United States. Has no effect if `endpoint` is also set.
    */
-  cloudServiceRegion?: "EU" | "US";
+  cloudServiceRegion?: "AUTO" | "EU" | "US";
 
   /**
    * The expected geographic region of the license plates

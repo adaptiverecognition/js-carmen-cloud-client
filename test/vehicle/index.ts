@@ -27,10 +27,13 @@ const usProdAPIKey = process.env.TEST_US_PROD_API_KEY || "";
 jest.setTimeout(30000);
 
 describe("VehicleAPIClient", () => {
-  it("throws if both endpoint and cloudServiceRegion are undefined", () => {
+  it("throws if both endpoint is undefined and cloudServiceRegion is invalid", () => {
     expect(() => {
       const { endpoint: _, ...options } = testOptions; // eslint-disable-line @typescript-eslint/no-unused-vars
-      new VehicleAPIClient(options);
+      new VehicleAPIClient({
+        ...options,
+        cloudServiceRegion: "INVALID" as unknown as "AUTO"
+      });
     }).toThrowError(CarmenAPIConfigError);
   });
 

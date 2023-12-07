@@ -4,8 +4,8 @@ JavaScript/TypeScript client for [Carmen Cloud](https://cloud.adaptiverecognitio
 
 ## Supported API Versions
 
-- Vehicle API: v1.4
-- Transportation & Cargo API: v1.0
+- Vehicle API: v1.4.1
+- Transportation & Cargo API: v1.0.1
 
 ## 🛠️ How to Install
 
@@ -34,9 +34,7 @@ async function recognizeVehicle() {
     console.log(response);
 }
 
-recognizeVehicle()
-    .then()
-    .catch(err => console.error(err));
+recognizeVehicle().catch(console.error);
 ```
 
 ### 🚚 Transportation & Cargo API
@@ -55,9 +53,7 @@ async function recognize() {
     console.log(response);
 }
 
-recognize()
-    .then()
-    .catch(err => console.error(err));
+recognize().catch(console.error);
 ```
 
 ## 🔧 Development

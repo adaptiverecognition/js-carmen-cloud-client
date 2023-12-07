@@ -17,7 +17,15 @@
         },
         "nodetime": {
             "type": "number",
-            "description": "Total processing time spent on the worker node (includes processing, image loading and latency)."
+            "description": "Total processing time spent on the worker node (includes processing, image loading and latency). (*Available since version 1.4.*)"
+        },
+        "startuptime": {
+            "type": "number",
+            "description": "Startup time of the node processing the request. This can be greater in case of a cold start. (*Available since version 1.4.*)"
+        },
+        "recognitiontime": {
+            "type": "number",
+            "description": "Net processing time spent on recognizing the already loaded image. Use this number if you want to make an objective comparison between the difficulty of different images. (*Available since version 1.4*)"
         },
         "version": {
             "type": "string",
@@ -188,6 +196,8 @@
                                     "plateHeight" : { "type" : "integer", "description": "The estimated height (in millimeters) of the license plate. (*Available since version 1.4.*)" },
                                     "plateWidth" : { "type" : "integer", "description": "The estimated width (in millimeters) of the license plate. (*Available since version 1.4.*)" },
                                     "confidence" : { "type" : "integer", "description": "Overall confidence of the license plate calculated from plate type, position, and character confidence values.", "minimum": 0, "maximum": 100 },
+                                    "textConfidence" : { "type" : "integer", "description": "Confidence of license plate text recognition. (*Available since version 1.4.*)", "minimum": 0, "maximum": 100 },
+                                    "normalizedConfidence" : { "type" : "integer", "description": "Combined confidence of licese plate text, country, and state recognition. (*Available since version 1.4.*)", "minimum": 0, "maximum": 100 },
                                     "plateTypeConfidence" : { "type" : "integer", "description": "Confidence of the license plate type. (*Available since version 1.1.*)", "minimum": 0, "maximum": 100 },
                                     "positionConfidence" : { "type" : "integer", "description": "Confidence of the license plate position. (*Available since version 1.1.*)", "minimum": 0, "maximum": 100 },
                                     "proctime" : { "type" : "integer", "description": "The running time of the engine in milliseconds." },

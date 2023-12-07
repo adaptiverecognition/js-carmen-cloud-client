@@ -18,9 +18,17 @@ export interface VehicleAPIResponse {
    */
   nodename?: string;
   /**
-   * Total processing time spent on the worker node (includes processing, image loading and latency).
+   * Total processing time spent on the worker node (includes processing, image loading and latency). (*Available since version 1.4.*)
    */
   nodetime?: number;
+  /**
+   * Startup time of the node processing the request. This can be greater in case of a cold start. (*Available since version 1.4.*)
+   */
+  startuptime?: number;
+  /**
+   * Net processing time spent on recognizing the already loaded image. Use this number if you want to make an objective comparison between the difficulty of different images. (*Available since version 1.4*)
+   */
+  recognitiontime?: number;
   /**
    * The version of the API that returned the response. Incremented each time the response structure changes.
    */
@@ -353,6 +361,14 @@ export interface VehicleAPIResponse {
          * Overall confidence of the license plate calculated from plate type, position, and character confidence values.
          */
         confidence?: number;
+        /**
+         * Confidence of license plate text recognition. (*Available since version 1.4.*)
+         */
+        textConfidence?: number;
+        /**
+         * Combined confidence of licese plate text, country, and state recognition. (*Available since version 1.4.*)
+         */
+        normalizedConfidence?: number;
         /**
          * Confidence of the license plate type. (*Available since version 1.1.*)
          */
