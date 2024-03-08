@@ -1,0 +1,40 @@
+{
+    "type": "object",
+    "title": "Hook",
+    "description": "Represents a webhook.",
+    "properties": {
+        "status": {
+            "description": "The status of this hook",
+            "type": "string",
+            "enum": ["pending_confirmation", "confirmed", "deleted"]
+        },
+        "protocol": {
+            "description": "The protocol used to send events to this hook.",
+            "type": "string",
+            "enum": ["http", "https"]
+        },
+        "apis": {
+            "type": "array",
+            "description": "The list of APIs to subscribe to. Valid values are: `'vehicle'`, `'transport'`."
+        },
+        "hookUrl": {
+            "description": "The URL of the webhook events will be sent to.",
+            "type": "string"
+        },
+        "topicName": {
+            "description": "The name of the AWS SNS topic that serves this hook. This can be used to verify incoming requests.",
+            "type": "string"
+        },
+        "topicArn": {
+            "description": "The ARN of the AWS SNS topic that serves this hook. This can be used to verify incoming requests.",
+            "type": "string"
+        }
+    },
+    "required": [
+        "status",
+        "protocol",
+        "hookUrl",
+        "topicName",
+        "topicArn"
+    ]
+}

@@ -1,0 +1,49 @@
+{
+    "type": "object",
+    "title": "Events Response",
+    "description": "A list of events that match the query parameters and an optional continuation token for paging",
+    "properties": {
+        "events": {
+            "type": "array",
+            "description": "A list of events that match the query parameters",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "event": {
+                        "type": "object",
+                        "description": "The original event object, preserving the structure as it would have been returned by the API."
+                    },
+                    "attachmentURLs": {
+                        "type": "array",
+                        "description": "An array of URLs where the images sent with the original request can be downloaded.",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "creationTimestamp": {
+                        "type": "number",
+                        "description": "The millisecond-based Unix timestamp of the time the event was created."
+                    },
+                    "api": {
+                        "type": "string",
+                        "description": "The API the event originates from. Currently only one API, `vehicle` is available."
+                    }
+                },
+                "required": [
+                    "event",
+                    "attachmentURLs",
+                    "creationTimestamp",
+                    "api"
+                ]
+            }
+        },
+        "continuationToken": {
+            "type": "string",
+            "description": "A token that can be passed in the query parameter `continuation-token` in the next request to continue pagination after the last event in the current batch."
+        }
+    },
+    "required": [
+        "events"
+    ]
+}
+

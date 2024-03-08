@@ -1,0 +1,15 @@
+{
+    "type": "object",
+    "title": "Update Hook Request",
+    "description": "An object indicating whether a hook is subscribed the APIs included. An explicit true or false value will override an existing setting. If an API is not specified, its settings will be left as is.",
+    "properties": {
+        "vehicle": {
+            "type": "boolean",
+            "description": "Optional. Indicates whether to subscribe to the Vehicle API."
+        },
+        "transport": {
+            "type": "boolean",
+            "description": "Optional. Indicates whether to subscribe to the Transport API."
+        }
+    }
+}

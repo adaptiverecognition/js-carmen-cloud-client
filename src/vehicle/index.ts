@@ -10,7 +10,7 @@ import { VehicleAPIResponse } from "./response";
 import { Stream } from "stream";
 
 /**
- * A client for interacting with the Adaptive Recognition Cloud Vehicle API.
+ * A client for interacting with the Carmen Cloud Vehicle API.
  */
 export class VehicleAPIClient {
   supportedAPIVersion = "1.4.1";

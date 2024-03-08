@@ -1,0 +1,5 @@
+{
+    "enum": ["OK"],
+    "title": "Successful Response",
+    "description": "A response indicating successful execution."
+}

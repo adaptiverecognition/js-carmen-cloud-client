@@ -13,9 +13,11 @@
     "update-types": "npm run update-types:vehicle && npm run update-types:transport",
     "update-types:vehicle": "aws apigateway get-model --rest-api-id jw68bdy2t5 --model-name Response | jq --raw-output '.schema' > ./assets/vehicle/response.schema.json",
     "update-types:transport": "aws apigateway get-model --rest-api-id 2bzr9vm131 --model-name Response | jq --raw-output '.schema' > ./assets/transport/response.schema.json",
+    "update-types:storage-and-hook": "aws apigateway get-model --rest-api-id 2bzr9vm131 --model-name Response | jq --raw-output '.schema' > ./assets/storage-and-hook/response.schema.json",
     "generate-types": "npm run generate-types:vehicle && npm run generate-types:transport",
     "generate-types:vehicle": "json2ts --input ./assets/vehicle/response.schema.json --output ./src/vehicle/response.ts",
-    "generate-types:transport": "json2ts --input ./assets/transport/response.schema.json --output ./src/transport/response.ts"
+    "generate-types:transport": "json2ts --input ./assets/transport/response.schema.json --output ./src/transport/response.ts",
+    "generate-types:storage-and-hook": "json2ts --input ./assets/storage-and-hook/response.schema.json --output ./src/storage-and-hook/response.ts"
   },
   "keywords": [
     "anpr",

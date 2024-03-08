@@ -1,0 +1,22 @@
+{
+    "type": "object",
+    "title": "Storage Status Response",
+    "description": "An object with the list of APIs where event storage is currently enabled.",
+    "properties": {
+        "enabledApis": {
+            "description": "The list of APIs where event storage is currently enabled.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "topicArn": {
+            "description": "The ARN of the SNS topic hook requests are sent from. The value is `null` if storage is disabled.",
+            "type": ["string", "null"]
+        }
+    },
+    "required": [
+        "enabledApis",
+        "topicArn"
+    ]
+}

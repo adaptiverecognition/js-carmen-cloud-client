@@ -1,0 +1,16 @@
+{
+    "type": "object",
+    "title": "Create Hook Request",
+    "description": "The hook to create",
+    "required": ["hookUrl", "apis"],
+    "properties": {
+        "hookUrl": {
+            "type": "string",
+            "description": "The URL of the hook."
+        },
+        "apis": {
+            "type": "array",
+            "description": "The list of APIs to subscribe to. Valid values are: `'vehicle'`, `'transport'`."
+        }
+    }
+}
