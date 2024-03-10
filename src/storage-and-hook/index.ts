@@ -6,6 +6,11 @@ import { CarmenAPIConfigError } from "../errors";
 import { StorageAndHookAPIOptions } from "./options";
 import { StorageStatusResponse } from "./storagestatusresponse";
 import { Hooks } from "./hooks";
+import { Hook } from "./hook";
+import { UpdateHookRequest } from "./updatehookrequest";
+import { StorageStatusRequest } from "./apistoragestatusrequest";
+import { CreateHookRequest } from "./createhookrequest";
+import { EventsResponse } from "./eventsresponse";
 
 /**
  * A client for interacting with the Carmen Cloud Storage & Hook API.
@@ -27,6 +32,23 @@ export class StorageAndHookAPIClient {
   }
 
   /**
+   * Lists stored events for the API specified. Only events created in the last
+   * 24 hours are retained.
+   * 
+   * @param api The API the events of which to query. Valid values are `vehicle`
+   * and `transport`.
+   * @returns The list of events and an optional continuation token if there
+   * is more than one page.
+   */
+  async getEvents(api: 'vehicle' | 'transport'): Promise<EventsResponse> {
+    const headers = this.createRequestHeaders();
+    const url = urlcat(this.apiUrl, '/events/:api', { api });
+    const httpResponse = await axios.get(url, { headers });
+
+    return httpResponse.data as EventsResponse;
+  }
+
+  /**
    * Gets the current storage status and topic ARN (if it exists).
    * 
    * @returns The current storage status and topic ARN (if it exists).
@@ -40,9 +62,26 @@ export class StorageAndHookAPIClient {
   }
 
   /**
-   * Gets the current storage status and topic ARN (if it exists).
+   * Enables or disables storage based on the settings specified.
    * 
-   * @returns The current storage status and topic ARN (if it exists).
+   * @param apis An object with optional boolean properties `vehicle` and
+   * `transport`. If the property value is `true`, storage will be enabled for
+   * the API specified. If it is `false`, it will be disabled. If unspecified,
+   * it will be left as it is.
+   * @returns The updated storage status and topic ARN (if it exists).
+   */
+  async updateStorageStatus(apis: StorageStatusRequest): Promise<StorageStatusResponse> {
+    const headers = this.createRequestHeaders();
+    const url = urlcat(this.apiUrl, '/status');
+    const httpResponse = await axios.patch(url, apis, { headers });
+
+    return httpResponse.data as StorageStatusResponse;
+  }
+
+  /**
+   * List currently registered webhooks.
+   * 
+   * @returns An array of Hook objects.
    */
   async getHooks(): Promise<Hooks> {
     const headers = this.createRequestHeaders();
@@ -50,6 +89,67 @@ export class StorageAndHookAPIClient {
     const httpResponse = await axios.get(url, { headers });
 
     return httpResponse.data as Hooks;
+  }
+
+  /**
+   * Get the attributes of a webhook.
+   * 
+   * @param hookUrl The URL of the webhook.
+   * 
+   * @returns A Hook object that contains the attributes of the webhook specified.
+   */
+  async getHook(hookUrl: string): Promise<Hook> {
+    const headers = this.createRequestHeaders();
+    const url = urlcat(this.apiUrl, '/hooks/:hookUrl', { hookUrl });
+    const httpResponse = await axios.get(url, { headers });
+
+    return httpResponse.data as Hook;
+  }
+
+  /**
+   * Registers a new webhook
+   * 
+   * @param hook The attributes of the hook to create: its URL and the APIs to
+   * subscribe to.
+   * 
+   * @returns A Hook object with the attributes of the newly created webhook.
+   */
+  async createHook(hook: CreateHookRequest): Promise<Hook> {
+    const headers = this.createRequestHeaders();
+    const url = urlcat(this.apiUrl, '/hooks');
+    const httpResponse = await axios.post(url, hook, { headers });
+
+    return httpResponse.data as Hook;
+  }
+
+  /**
+   * Updates which APIs a webhook is subscribed to.
+   * 
+   * @param hookUrl The URL of the webhook.
+   * @param apis An object with optional boolean properties `vehicle` and
+   * `transport`. If the property value is `true`, the hook will receive events
+   * from the API specified. If it is `false`, it will not. If unspecified, the
+   * current setting will be kept.
+   * 
+   * @returns A Hook object with the attributes of the webhook after the update.
+   */
+  async updateHook(hookUrl: string, apis: UpdateHookRequest): Promise<Hook> {
+    const headers = this.createRequestHeaders();
+    const url = urlcat(this.apiUrl, '/hooks/:hookUrl', { hookUrl });
+    const httpResponse = await axios.patch(url, apis, { headers });
+
+    return httpResponse.data as Hook;
+  }
+
+  /**
+   * Deletes a webhook.
+   * 
+   * @param hookUrl The URL of the webhook to delete.
+   */
+  async deleteHook(hookUrl: string): Promise<void> {
+    const headers = this.createRequestHeaders();
+    const url = urlcat(this.apiUrl, '/hooks/:hookUrl', { hookUrl });
+    await axios.delete(url, { headers });
   }
 
   private createRequestHeaders() {
