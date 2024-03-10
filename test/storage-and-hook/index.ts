@@ -18,9 +18,6 @@ const testOptions: StorageAndHookAPIOptions = {
   endpoint: process.env.TEST_DEV_ENDPOINT_URL,
 };
 
-const euProdAPIKey = process.env.TEST_EU_PROD_API_KEY || "";
-const usProdAPIKey = process.env.TEST_US_PROD_API_KEY || "";
-
 jest.setTimeout(30000);
 
 describe("StorageAndHookAPIClient", () => {
