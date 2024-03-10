@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 
-pushd ./assets/storage-and-hook || exit
+# Check if the API parameter is provided
+if [ $# -eq 0 ]; then
+    echo "Please provide the API parameter (vehicle, transport, storage-and-hook)."
+    exit 1
+fi
+
+api="$1"
+
+pushd "./assets/$api" || exit
 
 # Iterage over ./assets/storage-and-hook/*.schema.json files
 # and generate TypeScript types for each one
@@ -9,7 +17,7 @@ do
   # Extract the model name from the file path
   model=$(basename "$schema" .schema.json)
   # Generate the TypeScript type
-  npx json2ts --input "./$model.schema.json" --output "../../src/storage-and-hook/${model,,}.ts"
+  npx json2ts --input "./$model.schema.json" --output "../../src/${api}/${model,,}.ts"
 done
 
 popd || exit

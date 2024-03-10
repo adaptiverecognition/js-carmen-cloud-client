@@ -10,14 +10,14 @@
     "lint": "eslint .",
     "test": "jest --detectOpenHandles",
     "test:ci": "jest --config ./jest.config.js --collectCoverage --coverageDirectory=\"./coverage\" --ci --reporters=default --reporters=jest-junit --watchAll=false",
-    "update-types": "npm run update-types:vehicle && npm run update-types:transport",
-    "update-types:vehicle": "aws apigateway get-model --rest-api-id jw68bdy2t5 --model-name Response | jq --raw-output '.schema' > ./assets/vehicle/response.schema.json",
-    "update-types:transport": "aws apigateway get-model --rest-api-id 2bzr9vm131 --model-name Response | jq --raw-output '.schema' > ./assets/transport/response.schema.json",
-    "update-types:storage-and-hook": "aws apigateway get-model --rest-api-id 2bzr9vm131 --model-name Response | jq --raw-output '.schema' > ./assets/storage-and-hook/response.schema.json",
-    "generate-types": "npm run generate-types:vehicle && npm run generate-types:transport",
-    "generate-types:vehicle": "json2ts --input ./assets/vehicle/response.schema.json --output ./src/vehicle/response.ts",
-    "generate-types:transport": "json2ts --input ./assets/transport/response.schema.json --output ./src/transport/response.ts",
-    "generate-types:storage-and-hook": "json2ts --input ./assets/storage-and-hook/response.schema.json --output ./src/storage-and-hook/response.ts"
+    "update-types": "npm run update-types:vehicle && npm run update-types:transport && npm run update-types:storage-and-hook",
+    "update-types:vehicle": "./scripts/update-schemas.sh vehicle",
+    "update-types:transport": "./scripts/update-schemas.sh transport",
+    "update-types:storage-and-hook": "./scripts/update-schemas.sh storage-and-hook",
+    "generate-types": "npm run generate-types:vehicle && npm run generate-types:transport && npm run generate-types:storage-and-hook",
+    "generate-types:vehicle": "./scripts/generate-types.sh vehicle",
+    "generate-types:transport": "./scripts/generate-types.sh transport",
+    "generate-types:storage-and-hook": "./scripts/generate-types.sh storage-and-hook"
   },
   "keywords": [
     "anpr",

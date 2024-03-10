@@ -358,7 +358,7 @@ export interface VehicleAPIResponse {
          */
         plateWidth?: number;
         /**
-         * Overall confidence of the license plate calculated from plate type, position, and character confidence values.
+         * Overall confidence of the license plate calculated from plate type, position, and character confidence values (plateTypeConfidence * positionConfidence * average of characterConfidences). If you need more fine-grained confidence data, use the other plate or character-level confidence properties.
          */
         confidence?: number;
         /**

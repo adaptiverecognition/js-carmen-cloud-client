@@ -1,24 +1,63 @@
 #!/usr/bin/env bash
 
-models=(
-  "APIStorageStatusRequest"
-  "CreateHookRequest"
-  "EventsResponse"
-  "Hook"
-  "Hooks"
-  "OKResponse"
-  "StorageStatusResponse"
-  "UpdateHookRequest"
-)
-schemadir="./assets/storage-and-hook"
+# Default values
+api_id=""
+models=()
+schema_dir=""
+
+# Function to set values based on the API parameter
+set_api_values() {
+    case "$1" in
+        "vehicle")
+            api_id="jw68bdy2t5"
+            models=(
+                "Response"
+            )
+            schema_dir="./assets/vehicle"
+            ;;
+        "transport")
+            api_id="2bzr9vm131"
+            models=(
+                "Response"
+            )
+            schema_dir="./assets/transport"
+            ;;
+        "storage-and-hook")
+            api_id="24ut7ue8d8"
+            models=(
+                "APIStorageStatusRequest"
+                "CreateHookRequest"
+                "EventsResponse"
+                "Hook"
+                "Hooks"
+                "OKResponse"
+                "StorageStatusResponse"
+                "UpdateHookRequest"
+            )
+            schema_dir="./assets/storage-and-hook"
+            ;;
+        *)
+            echo "Invalid API parameter. Allowed values: vehicle, transport, storage-and-hook"
+            exit 1
+            ;;
+    esac
+}
+
+# Check if the API parameter is provided
+if [ $# -eq 0 ]; then
+    echo "Please provide the API parameter (vehicle, transport, storage-and-hook)."
+    exit 1
+fi
+
+# Set the values based on the API parameter
+set_api_values "$1"
 
 for model in "${models[@]}"
 do
-   aws apigateway get-model --rest-api-id "24ut7ue8d8" --model-name "$model" | jq --raw-output '.schema' > "$schemadir/$model.schema.json"
+    aws apigateway get-model --rest-api-id "$api_id" --model-name "$model" | jq --raw-output '.schema' > "$schema_dir/$model.schema.json"
 done
 
-
-for file in $(find $schemadir -name '*.json'); do
+for file in $(find $schema_dir -name '*.json'); do
     # replace the remote reference with the local one
-    sed -i 's|https://apigateway.amazonaws.com/restapis/24ut7ue8d8/models/\(.*\)"|\1.schema.json"|g' "$file"
+    sed -i 's|https://apigateway.amazonaws.com/restapis/'"$api_id"'/models/\(.*\)"|\1.schema.json"|g' "$file"
 done

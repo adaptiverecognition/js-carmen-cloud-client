@@ -2,7 +2,7 @@
 import * as dotenv from "dotenv";
 import fs from "fs";
 import Ajv from "ajv";
-import responseSchema from "../../assets/vehicle/response.schema.json";
+import responseSchema from "../../assets/vehicle/Response.schema.json";
 import semver from "semver";
 import { VehicleAPIClient } from "../../src";
 import { CarmenAPIConfigError } from "../../src/";

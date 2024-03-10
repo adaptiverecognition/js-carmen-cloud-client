@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import * as dotenv from "dotenv";
-import fs from "fs";
 import Ajv from "ajv";
-import responseSchema from "../../assets/transport/response.schema.json";
+import responseSchema from "../../assets/transport/Response.schema.json";
 import semver from "semver";
 import { TransportAPIClient } from "../../src";
 import { CarmenAPIConfigError } from "../../src";

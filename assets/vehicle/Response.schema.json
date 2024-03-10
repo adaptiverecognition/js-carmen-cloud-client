@@ -193,9 +193,9 @@
                                             "r": { "type" : "integer", "description": "the red component of the color", "minimum": 0, "maximum": 255 }
                                         }
                                     },
-                                    "plateHeight" : { "type" : "integer", "description": "The estimated height (in millimeters) of the license plate. (*Available since version 1.4.*)" },
-                                    "plateWidth" : { "type" : "integer", "description": "The estimated width (in millimeters) of the license plate. (*Available since version 1.4.*)" },
-                                    "confidence" : { "type" : "integer", "description": "Overall confidence of the license plate calculated from plate type, position, and character confidence values.", "minimum": 0, "maximum": 100 },
+                                    "plateHeight" : { "type" : "number", "description": "The estimated height (in millimeters) of the license plate. (*Available since version 1.4.*)" },
+                                    "plateWidth" : { "type" : "number", "description": "The estimated width (in millimeters) of the license plate. (*Available since version 1.4.*)" },
+                                    "confidence" : { "type" : "integer", "description": "Overall confidence of the license plate calculated from plate type, position, and character confidence values (plateTypeConfidence * positionConfidence * average of characterConfidences). If you need more fine-grained confidence data, use the other plate or character-level confidence properties.", "minimum": 0, "maximum": 100 },
                                     "textConfidence" : { "type" : "integer", "description": "Confidence of license plate text recognition. (*Available since version 1.4.*)", "minimum": 0, "maximum": 100 },
                                     "normalizedConfidence" : { "type" : "integer", "description": "Combined confidence of licese plate text, country, and state recognition. (*Available since version 1.4.*)", "minimum": 0, "maximum": 100 },
                                     "plateTypeConfidence" : { "type" : "integer", "description": "Confidence of the license plate type. (*Available since version 1.1.*)", "minimum": 0, "maximum": 100 },
