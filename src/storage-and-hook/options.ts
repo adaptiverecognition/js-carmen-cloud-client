@@ -27,3 +27,40 @@ export interface StorageAndHookAPIOptions {
    */
   retryCount?: number;
 }
+
+/**
+ * Contains options for filtering events.
+ */
+export interface EventFilters {
+  /**
+   * The maximum number of events to return. Default: 200.
+   */
+  limit?: number;
+
+  /**
+   * The order in which to return events. Default: `"asc"`.
+   */
+  order?: 'asc' | 'desc';
+
+  /**
+   * The token to continue a previous request. If provided, the request will return
+   * events after the last event of the previous request.
+   */
+  'continuation-token'?: string;
+
+  /**
+   * The timestamp of the event to start at. If provided, the request will return
+   * events after or at the provided timestamp.
+   * 
+   * **NOTE:** `before` and `after`˙are mutually exclusive.
+   */
+  before?: number;
+
+  /**
+   * The timestamp of the event to end at. If provided, the request will return
+   * events before or at the provided timestamp.
+   * 
+   * **NOTE:** `before` and `after`˙are mutually exclusive.
+   */
+  after?: number;
+}

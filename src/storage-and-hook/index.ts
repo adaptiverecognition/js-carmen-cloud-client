@@ -3,7 +3,7 @@ import axios from "axios";
 import axiosRetry from 'axios-retry';
 import urlcat from "urlcat";
 import { CarmenAPIConfigError } from "../errors";
-import { StorageAndHookAPIOptions } from "./options";
+import { EventFilters, StorageAndHookAPIOptions } from "./options";
 import { StorageStatusResponse } from "./storagestatusresponse";
 import { Hooks } from "./hooks";
 import { Hook } from "./hook";
@@ -40,9 +40,11 @@ export class StorageAndHookAPIClient {
    * @returns The list of events and an optional continuation token if there
    * is more than one page.
    */
-  async getEvents(api: 'vehicle' | 'transport'): Promise<EventsResponse> {
+  async getEvents(api: 'vehicle' | 'transport', filters?: EventFilters): Promise<EventsResponse> {
     const headers = this.createRequestHeaders();
-    const url = urlcat(this.apiUrl, '/events/:api', { api });
+    const url = urlcat(this.apiUrl, '/events/:api', { api, ...filters });
+    console.log(url);
+    console.log(headers);
     const httpResponse = await axios.get(url, { headers });
 
     return httpResponse.data as EventsResponse;
