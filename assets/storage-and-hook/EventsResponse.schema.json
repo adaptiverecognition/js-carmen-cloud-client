@@ -26,7 +26,7 @@
                     },
                     "api": {
                         "type": "string",
-                        "description": "The API the event originates from. Currently only one API, `vehicle` is available."
+                        "description": "The API the event originates from. At the time of writing this documentation, the available APIs were `vehicle` and `transport` (Vehicle API and Transportation & Cargo API)."
                     }
                 },
                 "required": [

@@ -10,9 +10,19 @@
  */
 export interface StorageStatusResponse {
   /**
-   * The list of APIs where event storage is currently enabled.
+   * An object indicating whether storage is enabled for the APIs included.
    */
-  enabledApis: string[];
+  enabledApis: {
+    /**
+     * Optional. Indicates whether to enable storage for the Vehicle API.
+     */
+    vehicle?: boolean;
+    /**
+     * Optional. Indicates whether to enable storage for the Transport API.
+     */
+    transport?: boolean;
+    [k: string]: unknown;
+  };
   /**
    * The ARN of the SNS topic hook requests are sent from. The value is `null` if storage is disabled.
    */

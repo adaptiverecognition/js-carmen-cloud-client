@@ -1,53 +1,30 @@
+// A 24Q1-től az alábbi OCR engine-eket adjuk ki, egyaránt negyedéves frissítési gyakorisággal:
+// EU_RAIL: az eddigi UIC ill. RUS OCR engine-ek együtt + egyéb, európai vagon- és mozdonykódok
+// AM_RAIL: az eddigi AAR ill. BRA OCR engine-ek együtt + egyéb, az amerikai kontinenseken található vagon- és mozdonykódok
+// TRUCK: az eddigi ACCR_USA, USDOT és CHASSIS OCR engine-ek együtt + egyéb, teherautókon előforduló azonosító kódok
+// ISO: az eddigi ISO, ILU és ISOILU OCR engine-ek együtt
+
 export enum CodeType {
   /**
-   * US container codes (6 or 10 digits)
-   */
-  ACCR_USA = "accr_usa",
-
-  /**
-   * Intermodal shipping container codes (ilu)
-   */
-  ILU = "ilu",
-
-  /**
-   * Intermodal shipping container codes (iso)
+   * ISO and ILU shipping container codes
    */
   ISO = "iso",
 
   /**
-   * Moco container codes (8 digits)
+   * Identification codes used on trucks (ACCR, US DOT, CHASSIS and others)
    */
-  MOCO = "moco",
+  TRUCK = "truck",
 
   /**
-   * Brasil wagon codes (10 or 11 digits)
+   * American wagon and locomotive codes used across the American continent to
+   * identify individual rail vehicles (AAR, BRA and others)
    */
-  BRA = "bra",
+  AM_RAIL = "am-rail",
 
   /**
-   * Russian and Ukrainian wagon codes (8 digits)
+   * European wagon and locomotive codes used across Europe to identify individual rail vehicles
    */
-  RUS = "rus",
-
-  /**
-   * Cargo wagon codes
-   */
-  UIC = "uic",
-
-  /**
-   * US Cargo wagon codes
-   */
-  AAR = "aar",
-
-  /**
-   * US truck chassis code
-   */
-  CHASSIS = "chassis",
-
-  /**
-   * US Department of Transportation registration number
-   */
-  USDOT = "usdot",
+  EU_RAIL = "eu-rail",
 
 }
 

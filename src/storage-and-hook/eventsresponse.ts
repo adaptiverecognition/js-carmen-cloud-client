@@ -28,7 +28,7 @@ export interface EventsResponse {
      */
     creationTimestamp: number;
     /**
-     * The API the event originates from. Currently only one API, `vehicle` is available.
+     * The API the event originates from. At the time of writing this documentation, the available APIs were `vehicle` and `transport` (Vehicle API and Transportation & Cargo API).
      */
     api: string;
     [k: string]: unknown;

@@ -14,8 +14,18 @@
             "enum": ["http", "https"]
         },
         "apis": {
-            "type": "array",
-            "description": "The list of APIs to subscribe to. Valid values are: `'vehicle'`, `'transport'`."
+            "type": "object",
+            "description": "An object with properties that correspond to API subscriptions.",
+            "properties": {
+                "vehicle": {
+                    "type": "boolean",
+                    "description": "Optional. Indicates whether to enable storage for the Vehicle API."
+                },
+                "transport": {
+                    "type": "boolean",
+                    "description": "Optional. Indicates whether to enable storage for the Transport API."
+                }
+            }
         },
         "hookUrl": {
             "description": "The URL of the webhook events will be sent to.",

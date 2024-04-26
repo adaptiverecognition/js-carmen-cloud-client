@@ -4,10 +4,17 @@
     "description": "An object with the list of APIs where event storage is currently enabled.",
     "properties": {
         "enabledApis": {
-            "description": "The list of APIs where event storage is currently enabled.",
-            "type": "array",
-            "items": {
-                "type": "string"
+            "type": "object",
+            "description": "An object indicating whether storage is enabled for the APIs included.",
+            "properties": {
+                "vehicle": {
+                    "type": "boolean",
+                    "description": "Optional. Indicates whether to enable storage for the Vehicle API."
+                },
+                "transport": {
+                    "type": "boolean",
+                    "description": "Optional. Indicates whether to enable storage for the Transport API."
+                }
             }
         },
         "topicArn": {
