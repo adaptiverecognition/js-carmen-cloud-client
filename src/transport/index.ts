@@ -8,6 +8,9 @@ import { CarmenAPIConfigError } from "../errors";
 import { TransportAPIOptions } from "./options";
 import { TransportationCargoAPIResponse } from "./response";
 import { Stream } from "stream";
+
+export * from "./options";
+export * from "./response";
  
 export class TransportAPIClient {
   supportedAPIVersion = "1.0.1";
@@ -34,7 +37,7 @@ export class TransportAPIClient {
     const response = httpResponse.data as TransportationCargoAPIResponse;
 
     if (response.version !== this.supportedAPIVersion) {
-      console.error(`WARNING: API version mismatch. Expected ${this.supportedAPIVersion}, got ${response.version}.`);
+      console.warn(`WARNING: API version mismatch. Expected ${this.supportedAPIVersion}, got ${response.version}.`);
     }
 
     return response;

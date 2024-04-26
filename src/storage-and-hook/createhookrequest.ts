@@ -14,8 +14,18 @@ export interface CreateHookRequest {
    */
   hookUrl: string;
   /**
-   * The list of APIs to subscribe to. Valid values are: `'vehicle'`, `'transport'`.
+   * An object with properties that correspond to API subscriptions.
    */
-  apis: unknown[];
+  apis: {
+    /**
+     * Optional. Indicates whether to enable storage for the Vehicle API.
+     */
+    vehicle?: boolean;
+    /**
+     * Optional. Indicates whether to enable storage for the Transport API.
+     */
+    transport?: boolean;
+    [k: string]: unknown;
+  };
   [k: string]: unknown;
 }

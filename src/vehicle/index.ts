@@ -9,6 +9,9 @@ import { VehicleAPIOptions } from "./options";
 import { VehicleAPIResponse } from "./response";
 import { Stream } from "stream";
 
+export * from "./options";
+export * from "./response";
+
 /**
  * A client for interacting with the Carmen Cloud Vehicle API.
  */
@@ -45,7 +48,7 @@ export class VehicleAPIClient {
     const response = httpResponse.data as VehicleAPIResponse;
 
     if (response.version !== this.supportedAPIVersion) {
-      console.error(`WARNING: API version mismatch. Expected ${this.supportedAPIVersion}, got ${response.version}.`);
+      console.warn(`WARNING: API version mismatch. Expected ${this.supportedAPIVersion}, got ${response.version}.`);
     }
 
     return response;
@@ -135,7 +138,7 @@ export class VehicleAPIClient {
   private getParametrizedApiUrl() {
     const baseUrl = this.selectApiBaseUrl();
     return urlcat(baseUrl, "/vehicle/:region", {
-      region: this.options.inputImageLocation.region,
+      region: this.options.inputImageLocation.region.toLowerCase(),
     });
   }
 

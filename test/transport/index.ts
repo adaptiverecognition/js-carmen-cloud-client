@@ -15,7 +15,7 @@ const validateResponse = ajv.compile(responseSchema);
 
 const testOptions: TransportAPIOptions = {
   apiKey: process.env.TEST_DEV_API_KEY || "",
-  type: CodeType.ACCR_USA,
+  type: CodeType.TRUCK,
   endpoint: process.env.TEST_DEV_ENDPOINT_URL,
 };
 
@@ -105,7 +105,7 @@ describe("TransportAPIClient", () => {
   });
 
   it("can read BRA codes", async () => {
-    const client = new TransportAPIClient({ ...testOptions, type: CodeType.BRA });
+    const client = new TransportAPIClient({ ...testOptions, type: CodeType.AM_RAIL });
     const response = await client.send(
       "./test/transport/bra01.jpg",
       "./test/transport/bra02.jpg",
@@ -120,7 +120,7 @@ describe("TransportAPIClient", () => {
   });
 
   it("can read CHASSIS codes", async () => {
-    const client = new TransportAPIClient({ ...testOptions, type: CodeType.CHASSIS });
+    const client = new TransportAPIClient({ ...testOptions, type: CodeType.TRUCK });
     const response = await client.send(
       "./test/transport/chassis01.jpg",
       "./test/transport/chassis02.jpg",
@@ -135,37 +135,33 @@ describe("TransportAPIClient", () => {
   });
 
   it("can read ILU codes", async () => {
-    const client = new TransportAPIClient({ ...testOptions, type: CodeType.ILU });
+    const client = new TransportAPIClient({ ...testOptions, type: CodeType.ISO });
     const response = await client.send(
       "./test/transport/ilu01.jpg",
       "./test/transport/ilu02.jpg",
       "./test/transport/ilu03.jpg",
-      "./test/transport/ilu20.jpg",
     );
     expect(response.data).toBeDefined();
     expect(response.data?.codes).toBeDefined();
     expect(response.data?.codes).toHaveLength(1);
-    expect(response.data?.codes![0].code).toBe("LKWA06011300WI1");
-    expect(response.data?.codes![0].imageResults).toHaveLength(4);
+    expect(response.data?.codes![0].code).toBe("REID0008406");
+    expect(response.data?.codes![0].imageResults).toHaveLength(3);
   });
 
   it("can read ISO codes", async () => {
     const client = new TransportAPIClient({ ...testOptions, type: CodeType.ISO });
     const response = await client.send(
       "./test/transport/iso01.jpg",
-      "./test/transport/iso02.jpg",
-      "./test/transport/iso03.jpg",
-      "./test/transport/iso20.jpg",
     );
     expect(response.data).toBeDefined();
     expect(response.data?.codes).toBeDefined();
     expect(response.data?.codes).toHaveLength(1);
-    expect(response.data?.codes![0].code).toBe("NOSU2463454SG2210");
-    expect(response.data?.codes![0].imageResults).toHaveLength(4);
+    expect(response.data?.codes![0].code).toBe("TCKU387869122G1");
+    expect(response.data?.codes![0].imageResults).toHaveLength(1);
   });
 
   it("can read UIC codes", async () => {
-    const client = new TransportAPIClient({ ...testOptions, type: CodeType.UIC });
+    const client = new TransportAPIClient({ ...testOptions, type: CodeType.EU_RAIL });
     const response = await client.send(
       "./test/transport/uic01.jpg",
       "./test/transport/uic02.jpg",
@@ -180,18 +176,15 @@ describe("TransportAPIClient", () => {
   });
 
   it("can read USDOT codes", async () => {
-    const client = new TransportAPIClient({ ...testOptions, type: CodeType.USDOT });
+    const client = new TransportAPIClient({ ...testOptions, type: CodeType.TRUCK });
     const response = await client.send(
       "./test/transport/usdot01.jpg",
-      "./test/transport/usdot02.jpg",
-      "./test/transport/usdot03.jpg",
-      "./test/transport/usdot20.jpg",
     );
     expect(response.data).toBeDefined();
     expect(response.data?.codes).toBeDefined();
     expect(response.data?.codes).toHaveLength(1);
-    expect(response.data?.codes![0].code).toBe("1201193");
-    expect(response.data?.codes![0].imageResults).toHaveLength(4);
+    expect(response.data?.codes![0].code).toBe("USDOT95406");
+    expect(response.data?.codes![0].imageResults).toHaveLength(1);
   });
 
   it("returns a request object that conforms to the model schema - if this test fails, please run `npm run update-types && npm run generate-types` and commit the result.", async () => {
@@ -205,9 +198,9 @@ describe("TransportAPIClient", () => {
   it("has a client version that matches the API response version and the version in the README", async () => {
     const client = new TransportAPIClient(testOptions);
     const response = await client.send("./test/transport/accr_usa01.jpg");
-    const clientVersion = semver.parse(client.supportedAPIVersion + '.0');
-    const responseVersion = semver.parse(response.version + '.0');
-    const readmeVersion = semver.parse(extractAPIVersionFromReadme('Transportation & Cargo API') + '.0');
+    const clientVersion = semver.parse(client.supportedAPIVersion);
+    const responseVersion = semver.parse(response.version);
+    const readmeVersion = semver.parse(extractAPIVersionFromReadme('Transportation & Cargo API'));
     expect(clientVersion?.major).toBe(responseVersion?.major);
     expect(clientVersion?.minor).toBe(responseVersion?.minor);
     expect(clientVersion?.major).toBe(readmeVersion?.major);

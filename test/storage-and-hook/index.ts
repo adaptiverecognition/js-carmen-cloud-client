@@ -34,7 +34,6 @@ describe("StorageAndHookAPIClient", () => {
   it("returns schema-conformant storage status response", async () => {
     const client = new StorageAndHookAPIClient(testOptions);
     const response = await client.getStorageStatus();
-    console.log(response);
 
     const isValid = validateStorageStatusResponse(response);
     expect(validateStorageStatusResponse.errors).toBeFalsy();
@@ -44,7 +43,6 @@ describe("StorageAndHookAPIClient", () => {
   it("returns schema-conformant hooks response", async () => {
     const client = new StorageAndHookAPIClient(testOptions);
     const response = await client.getHooks();
-    console.log(response);
 
     expect(Array.isArray(response)).toBe(true);
 

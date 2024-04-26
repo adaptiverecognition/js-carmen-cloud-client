@@ -43,8 +43,6 @@ export class StorageAndHookAPIClient {
   async getEvents(api: 'vehicle' | 'transport', filters?: EventFilters): Promise<EventsResponse> {
     const headers = this.createRequestHeaders();
     const url = urlcat(this.apiUrl, '/events/:api', { api, ...filters });
-    console.log(url);
-    console.log(headers);
     const httpResponse = await axios.get(url, { headers });
 
     return httpResponse.data as EventsResponse;
