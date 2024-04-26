@@ -1,6 +1,6 @@
 {
   "name": "@adaptive-recognition/carmen-cloud-client",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "Node.js client for Carmen Cloud by Adaptive Recognition. Efficiently read license plates, recognize vehicle details, and process container, railway wagon, and US DOT codes.",
   "main": "dist/index.js",
   "scripts": {
