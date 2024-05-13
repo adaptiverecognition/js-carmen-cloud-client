@@ -1,0 +1,45 @@
+{
+  "title": "Products",
+  "description": "An array of products a suer can subscribe to.",
+  "type": "array",
+  "items": {
+    "title": "Product",
+    "description": "Represents a product a user can subscribe to.",
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "The unique identifier of this product.",
+        "title": "ID"
+      },
+      "name": {
+        "type": "string",
+        "description": "The human-readable display name of this product.",
+        "title": "Name"
+      },
+      "stripeProductCode": {
+        "type": "string",
+        "description": "The Stripe product code associated with this product.",
+        "title": "Stripe Product Code"
+      },
+      "stripeUsagesProductCode": {
+        "type": "string",
+        "description": "The Stripe product code used for metering usage for this product.",
+        "title": "Stripe Usages Product Code"
+      },
+      "marketplaceProductCode": {
+        "type": "string",
+        "description": "The AWS Marketplace product code associated with this product.",
+        "title": "Marketplace Product Code"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "stripeProductCode",
+      "stripeUsagesProductCode",
+      "marketplaceProductCode"
+    ]
+  }
+}
+

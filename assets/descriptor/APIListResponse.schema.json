@@ -1,0 +1,57 @@
+{
+  "type": "array",
+  "title": "API Stages",
+  "description": "An array of objects listing the properties of API stages.",
+  "items": {
+    "type": "object",
+    "title": "API Stage",
+    "description": "Represents an API stage.",
+    "properties": {
+      "id": {
+        "type": "string",
+        "title": "API ID",
+        "description": "The unique identifier of the API."
+      },
+      "api": {
+        "type": "string",
+        "title": "Friendly API ID",
+        "description": "The friendly identifier of the API. E.g.: `vehicle`."
+      },
+      "stage": {
+        "type": "string",
+        "title": "Stage Name",
+        "description": "Friendly identifier of the API stage."
+      },
+      "swagger": {
+        "type": "object",
+        "title": "API Stage Swagger Definition",
+        "description": "The Swagger definition of the API stage. Only included if the query parameter `detailed` is `true`."
+      },
+      "beta": {
+        "type": "boolean",
+        "title": "Beta",
+        "description": "Indicates whether this stage serves the upcoming, beta quality version of the API."
+      },
+      "authTokenRequired": {
+        "type": "string",
+        "title": "Authentication Token Required",
+        "description": "For internal use only."
+      },
+      "enabled": {
+        "type": "boolean",
+        "title": "Enabled",
+        "description": "For internal use only."
+      }
+    },
+    "required": [
+      "id",
+      "api",
+      "stage",
+      "swagger",
+      "beta",
+      "authTokenRequired",
+      "enabled"
+    ]
+  }
+}
+

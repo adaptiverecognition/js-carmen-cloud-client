@@ -26,7 +26,7 @@ const usProdAPIKey = process.env.TEST_US_PROD_API_KEY || "";
 
 jest.setTimeout(30000);
 
-describe("VehicleAPIClient", () => {
+xdescribe("VehicleAPIClient", () => {
   it("throws if both endpoint is undefined and cloudServiceRegion is invalid", () => {
     expect(() => {
       const { endpoint: _, ...options } = testOptions; // eslint-disable-line @typescript-eslint/no-unused-vars

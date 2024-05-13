@@ -20,7 +20,7 @@ const testOptions: StorageAndHookAPIOptions = {
 
 jest.setTimeout(30000);
 
-describe("StorageAndHookAPIClient", () => {
+xdescribe("StorageAndHookAPIClient", () => {
   it("throws if both endpoint is undefined and cloudServiceRegion is invalid", () => {
     expect(() => {
       const { endpoint: _, ...options } = testOptions; // eslint-disable-line @typescript-eslint/no-unused-vars

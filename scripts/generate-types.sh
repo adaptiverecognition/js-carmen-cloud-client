@@ -2,7 +2,7 @@
 
 # Check if the API parameter is provided
 if [ $# -eq 0 ]; then
-    echo "Please provide the API parameter (vehicle, transport, storage-and-hook)."
+    echo "Please provide the API parameter (vehicle, transport, storage-and-hook, descriptor)."
     exit 1
 fi
 

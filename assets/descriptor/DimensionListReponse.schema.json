@@ -1,0 +1,30 @@
+{
+    "type": "array",
+    "title": "Dimensions",
+    "description": "An array of available subscription dimensions.",
+    "items": {
+        "type": "object",
+        "properties": {
+            "id": {
+                "type": "string",
+                "title": "Dimension ID",
+                "description": "The unique identifier of the dimension."
+            },
+            "name": {
+                "type": "string",
+                "title": "Dimension Name",
+                "description": "The display name of the dimension."
+            },
+            "requestCount": {
+                "type": "number",
+                "title": "Request Count",
+                "description": "The number of API requests included in the dimension."
+            }
+        },
+        "required": [
+            "id",
+            "name",
+            "requestCount"
+        ]
+    }
+}

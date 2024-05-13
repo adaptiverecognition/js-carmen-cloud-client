@@ -1,0 +1,8 @@
+{
+    "type": "array",
+    "title": "Usage Plan IDs",
+    "description": "The list of usage plan IDs the authenticated user is subscribed to.",
+    "items": {
+        "type": "string"
+    }
+}

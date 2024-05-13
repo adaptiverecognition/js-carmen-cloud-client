@@ -1,0 +1,99 @@
+{
+  "type": "object",
+  "title": "Prices",
+  "description": "Lists of publicly available pricing tiers by product.",
+  "patternProperties": {
+    "^.*$": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "title": "Price",
+        "description": "A pricing tier for a product.",
+        "properties": {
+          "requestCount": {
+            "type": "integer",
+            "description": "The number of requests allowed in the interval."
+          },
+          "throttle": {
+            "type": "object",
+            "description": "The rate limit for the pricing tier.",
+            "properties": {
+              "rateLimit": {
+                "type": "integer",
+                "description": "The number of requests allowed per second."
+              },
+              "burstLimit": {
+                "type": "integer",
+                "description": "The number of requests allowed in a burst."
+              }
+            },
+            "required": ["rateLimit", "burstLimit"]
+          },
+          "free": {
+            "type": "boolean",
+            "description": "Whether the pricing tier is free or not."
+          },
+          "dimension": {
+            "type": "string",
+            "description": "The dimension of the pricing tier."
+          },
+          "title": {
+            "type": "string",
+            "description": "The title of the pricing tier."
+          },
+          "price": {
+            "type": "number",
+            "description": "The price of the pricing tier."
+          },
+          "currency": {
+            "type": "string",
+            "description": "The currency of the pricing tier."
+          },
+          "interval": {
+            "type": "string",
+            "description": "The interval the pricing tier is billed at."
+          },
+          "overuse": {
+            "type": "object",
+            "description": "The overuse fee for the pricing tier.",
+            "properties": {
+              "price": {
+                "type": "number",
+                "description": "The price of the overuse fee."
+              },
+              "currency": {
+                "type": "string",
+                "description": "The currency of the overuse fee."
+              }
+            },
+            "required": ["price", "currency"],
+            "additionalProperties": false
+          },
+          "quota": {
+            "type": "object",
+            "description": "The quota that applies to the pricing tier.",
+            "properties": {
+              "limit": {
+                "type": "integer",
+                "description": "The limit of the quota."
+              },
+              "offset": {
+                "type": "integer",
+                "description": "The number of days or months the quota is offset by."
+              },
+              "period": {
+                "type": "string",
+                "description": "The period the quota is measured over.",
+                "enum": ["DAY", "MONTH"]
+              }
+            },
+            "required": ["limit", "offset", "period"],
+            "additionalProperties": false
+          }
+        },
+        "required": ["requestCount", "throttle"],
+        "additionalProperties": false
+      }
+    }
+  }
+}

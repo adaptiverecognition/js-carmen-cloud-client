@@ -1,0 +1,28 @@
+{
+    "type": "object",
+    "title": "Paid Subscription Usages",
+    "description": "Usage data for a paid API subscription.",
+    "properties": {
+        "startTime": {
+            "type": "string",
+            "title": "Start Time",
+            "description": "The start of the time interval queried as a millisecond timestamp, not older than 90 days.",
+            "format": "date"
+        },
+        "endTime": {
+            "type": "string",
+            "title": "End Time",
+            "description": "The end of the time interval queried as a millisecond timestamp.",
+            "format": "date"
+        },
+        "usages": {
+            "type": "array",
+            "title": "Usages",
+            "description": "Lists the number of credits used for each day of the interval queried. The sum of this array is the total number of credits used in the interval queried.",
+            "items": {
+                "type": "number"
+            }
+        }
+    },
+    "required": ["startTime", "endTime", "usages"]
+}

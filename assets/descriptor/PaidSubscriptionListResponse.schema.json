@@ -1,0 +1,45 @@
+{
+  "type": "array",
+  "title": "Paid Subscriptions",
+  "description": "An array of paid subscriptions.",
+  "items": {
+    "type": "object",
+    "title": "Paid Subscription",
+    "description": "Information about a paid subscription the authenticated user has.",
+    "properties": {
+      "id": {
+        "type": "string",
+        "title": "Usage Plan ID",
+        "description": "The ID of the usage plan that applies to this subscription."
+      },
+      "dimension": {
+        "type": "string",
+        "title": "Dimension",
+        "description": "The friendly identifier of the dimension of this subscription."
+      },
+      "startTime": {
+        "type": "number",
+        "title": "Start Time",
+        "description": "A millisecond timestamp indicating when the subscription started."
+      },
+      "endTime": {
+        "type": "number",
+        "title": "End Time",
+        "description": "A millisecond timestamp indicating the next turnover date of the subscription."
+      },
+      "type": {
+        "type": "string",
+        "title": "Subscription Type",
+        "description": "`stripe` or `marketplace`, indicates whether this subscription has been initiated via the Stripe payment provider or via AWS Marketplace",
+        "enum": ["stripe", "marketplace"]
+      },
+      "productId": {
+        "type": "string",
+        "title": "Product ID",
+        "description": "The product this subscription belongs to."
+      }
+    },
+    "required": ["id", "dimension", "startTime", "endTime", "type"]
+  }
+}
+

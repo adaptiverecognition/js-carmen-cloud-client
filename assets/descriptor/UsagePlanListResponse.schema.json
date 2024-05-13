@@ -1,0 +1,156 @@
+{
+    "type": "array",
+    "title": "Usage Plans",
+    "description": "List of Usage Plans.",
+    "items": {
+        "type": "object",
+        "title": "Usage Plan",
+        "description": "The properties of a Usage Plan.",
+        "properties": {
+            "id": {
+                "type": "string",
+                "title": "ID",
+                "description": "The unique identifier of the usage plan."
+            },
+            "name": {
+                "type": "string",
+                "title": "Name",
+                "description": "The name of the usage plan."
+            },
+            "description": {
+                "type": "string",
+                "title": "Description",
+                "description": "The description of the usage plan."
+            },
+            "apis": {
+                "type": "array",
+                "title": "APIs",
+                "description": "The friendly identifiers of the APIs this usage plan applies to.",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "apiStages": {
+                "type": "object",
+                "title": "API Stages",
+                "description": "The API stages this usage plan applies to.",
+                "properties": {
+                    "apiId": {
+                        "type": "string",
+                        "title": "API ID",
+                        "description": "The ID of the API."
+                    },
+                    "stage": {
+                        "type": "string",
+                        "title": "API Stage",
+                        "description": "The friendly identifier of the stage."
+                    }
+                },
+                "required": [
+                    "apiId",
+                    "stage"
+                ]
+            },
+            "quota": {
+                "type": "object",
+                "title": "Quota",
+                "description": "The number of requests included in this usage plan.",
+                "properties": {
+                    "limit": {
+                        "type": "number",
+                        "title": "Limit",
+                        "description": "The maximum number of requests in one period."
+                    },
+                    "offset": {
+                        "type": "number",
+                        "title": "Offset",
+                        "description": "When the quota window starts inside a calendar period (e.g. if `offset` is 10 and `period` is `MONTH`, counting requests restarts on the 10th of every calendar month)."
+                    },
+                    "period": {
+                        "type": "string",
+                        "enum": [
+                            "DAY",
+                            "MONTH"
+                        ],
+                        "title": "Period",
+                        "description": "The calendar period the quota applies to."
+                    }
+                },
+                "required": [
+                    "limit",
+                    "offset",
+                    "period"
+                ]
+            },
+            "throttle": {
+                "type": "object",
+                "title": "Throttle",
+                "description": "Request rate and conncurrency limits that apply for this Usage Plan.",
+                "properties": {
+                    "rateLimit": {
+                        "type": "number",
+                        "title": "Rate Limit",
+                        "description": "The maximum rate (requests/second)."
+                    },
+                    "burstLimit": {
+                        "type": "number",
+                        "title": "Burst Limit",
+                        "description": "The maximum number of concurrent requests."
+                    }
+                },
+                "required": [
+                    "rateLimit",
+                    "burstLimit"
+                ]
+            },
+            "autoSignup": {
+                "type": "boolean",
+                "title": "Auto Sign-Up",
+                "description": "Tor internal use only."
+            },
+            "dimensions": {
+                "type": "array",
+                "title": "Dimensions",
+                "description": "The paid subscription dimensions this usage plan applies to.",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "stripeProductCode": {
+                "type": "string",
+                "title": "Stripe Product Code",
+                "description": "For internal use only."
+            },
+            "marketplaceProductCode": {
+                "type": "string",
+                "title": "Marketplace Product Code",
+                "description": "For internal use only."
+            },
+            "enabled": {
+                "type": "boolean",
+                "title": "Enabled",
+                "description": "For internal use only."
+            },
+            "paid": {
+                "type": "boolean",
+                "title": "Paid",
+                "description": "Indicates whether this usage plan applies to one or more paid subscription dimenions or the free tier."
+            }
+        },
+        "required": [
+            "id",
+            "name",
+            "description",
+            "apis",
+            "apiStages",
+            "quota",
+            "throttle",
+            "autoSignup",
+            "dimensions",
+            "stripeProductCode",
+            "marketplaceProductCode",
+            "enabled",
+            "paid"
+        ]
+    }
+}
