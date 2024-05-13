@@ -17,7 +17,7 @@ npm install --save @adaptive-recognition/carmen-cloud-client
 
 ## 🚀 Usage
 
-The three APIs available have separate client classes. For basic usage, see the examples below.
+The four APIs available have separate client classes. For basic usage, see the examples below.
 
 ### 🚗 Vehicle API
 
