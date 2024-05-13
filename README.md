@@ -107,6 +107,51 @@ console.log('updatedHook:', updatedHook);
 await client.deleteHook('https://your-domain.com/your-hook-path');
 ```
 
+### ✍️ Descriptor API
+
+```typescript
+import { DescriptorAPIClient, DescriptorAPIOptions } from ".";
+
+const options: DescriptorAPIOptions = {
+  apiKey: "<YOUR_API_KEY>",
+  cloudServiceRegion: 'EU'
+};
+const client = new DescriptorAPIClient(options);
+
+const apis = await client.getApis({ detailed: true });
+console.log('apis:', apis);
+
+const dimensions = await client.getDimensions();
+console.log('dimensions:', dimensions);
+
+const freeCallCount = await client.getFreeCallCount('carmen');
+console.log('freeCallCount:', freeCallCount);
+
+const paidSubscriptionUsage = await client.getPaidSubscriptionUsage('carmen');
+console.log('paidSubscriptionUsage:', paidSubscriptionUsage);
+
+const paidSubscriptions = await client.getPaidSubscriptions();
+console.log('paidSubscriptions:', paidSubscriptions);
+
+const prices = await client.getPrices('carmen', 'HU');
+console.log('prices:', prices);
+
+const products = await client.getProducts();
+console.log('products:', products);
+
+const region = await client.getRegion();
+console.log('region:', region);
+
+const usagePlanSubscriptions = await client.getUsagePlanSubscriptions();
+console.log('usagePlanSubscriptions:', usagePlanSubscriptions);
+
+const usagePlanUsage = await client.getUsagePlanUsage();
+console.log('usagePlanUsage:', usagePlanUsage);
+
+const usagePlans = await client.getUsagePlans();
+console.log('usagePlans:', usagePlans);
+```
+
 ## 🔧 Development
 
 For more information about developing and contributing to this project, see [DEVELOPMENT.md](DEVELOPMENT.md).

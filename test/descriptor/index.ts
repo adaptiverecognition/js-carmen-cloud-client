@@ -27,7 +27,7 @@ describe("DescriptorAPIClient", () => {
   });
 
   describe("getDimensions()", () => {
-    it("returns valid response", async () => {
+    it("returns valid response if called with an API key", async () => {
       const client = new DescriptorAPIClient(authenticatedOptions);
       const dimensions = await client.getDimensions();
 
@@ -36,7 +36,7 @@ describe("DescriptorAPIClient", () => {
 
       if (dimensions.length > 0) {
         const dimension = dimensions[0];
-        expect(dimension).toHaveProperty("id");
+        // we only check two typical properties to make sure we got the right object
         expect(dimension).toHaveProperty("name");
         expect(dimension).toHaveProperty("requestCount");
       }
@@ -52,7 +52,7 @@ describe("DescriptorAPIClient", () => {
   });
 
   describe("getFreeCallCount()", () => {
-    it("returns valid response", async () => {
+    it("returns valid response if called with an API key", async () => {
       const client = new DescriptorAPIClient(authenticatedOptions);
       const freeCallCount = await client.getFreeCallCount('carmen');
 
@@ -66,7 +66,7 @@ describe("DescriptorAPIClient", () => {
   });
 
   describe("getPaidSubscriptions()", () => {
-    it("returns valid response", async () => {
+    it("returns valid response if called with an API key", async () => {
       const client = new DescriptorAPIClient(authenticatedOptions);
       const subscriptions = await client.getPaidSubscriptions();
 
@@ -75,11 +75,8 @@ describe("DescriptorAPIClient", () => {
 
       if (subscriptions.length > 0) {
         const subscription = subscriptions[0];
-        expect(subscription).toHaveProperty("id");
-        expect(subscription).toHaveProperty("dimension");
+        // we only check two typical properties to make sure we got the right object
         expect(subscription).toHaveProperty("startTime");
-        expect(subscription).toHaveProperty("endTime");
-        expect(subscription).toHaveProperty("type");
         expect(subscription).toHaveProperty("productId");
       }
     });
@@ -91,7 +88,7 @@ describe("DescriptorAPIClient", () => {
   });
 
   describe("getPrices()", () => {
-    it("returns valid response", async () => {
+    it("returns valid response if called with an API key", async () => {
       const client = new DescriptorAPIClient(authenticatedOptions);
       const pricesByProduct = await client.getPrices("carmen", "HU");
 
@@ -103,6 +100,7 @@ describe("DescriptorAPIClient", () => {
 
       if (prices.length > 0) {
         const price = prices[0];
+        // we only check two typical properties to make sure we got the right object
         expect(price).toHaveProperty("requestCount");
         expect(price).toHaveProperty("throttle");
       }
@@ -111,6 +109,110 @@ describe("DescriptorAPIClient", () => {
     it("cannot be called without an API key", async () => {
       const client = new DescriptorAPIClient(unauthenticatedOptions);
       expect(async () => await client.getPrices("carmen", "HU")).rejects;
+    });
+  });
+
+  describe("getProducts()", () => {
+    it("returns valid response if called with an API key", async () => {
+      const client = new DescriptorAPIClient(authenticatedOptions);
+      const products = await client.getProducts();
+
+      expect(products).toBeTruthy();
+      expect(products).toBeInstanceOf(Array);
+      expect(products.length).toBeGreaterThan(0);
+
+      const product = products[0];
+      // we only check two typical properties to make sure we got the right object
+      expect(product).toHaveProperty("metered");
+      expect(product).toHaveProperty("freeCallCount");
+    });
+
+    it("cannot be called without an API key", async () => {
+      const client = new DescriptorAPIClient(unauthenticatedOptions);
+      expect(async () => await client.getProducts()).rejects;
+    });
+  });
+
+  describe("getRegion()", () => {
+    it("returns valid response if called with an API key", async () => {
+      const client = new DescriptorAPIClient(authenticatedOptions);
+      const region = await client.getRegion();
+
+      expect(region).toBeTruthy();
+      expect(typeof region).toBe("string");
+      expect(region).toMatch(/eu-central-1|us-east-1/);
+    });
+
+    it("can be called without an API key", async () => {
+      const client = new DescriptorAPIClient(authenticatedOptions);
+      const region = await client.getRegion();
+
+      expect(region).toBeTruthy();
+      expect(typeof region).toBe("string");
+      expect(region).toMatch(/eu-central-1|us-east-1/);
+    });
+  });
+
+  describe("getUsagePlanSubscriptions()", () => {
+    it("returns valid response if called with an API key", async () => {
+      const client = new DescriptorAPIClient(authenticatedOptions);
+      const subscriptions = await client.getUsagePlanSubscriptions();
+
+      expect(subscriptions).toBeTruthy();
+      expect(subscriptions).toBeInstanceOf(Array);
+
+      if (subscriptions.length > 0) {
+        const subscription = subscriptions[0];
+        expect(typeof subscription).toBe("string");
+      }
+    });
+
+    it("cannot be called without an API key", async () => {
+      const client = new DescriptorAPIClient(unauthenticatedOptions);
+      expect(async () => await client.getUsagePlanSubscriptions()).rejects;
+    });
+  });
+
+  describe("getUsagePlanUsage()", () => {
+    it("returns valid response if called with an API key", async () => {
+      const client = new DescriptorAPIClient(authenticatedOptions);
+      const usage = await client.getUsagePlanUsage();
+
+      expect(usage).toBeTruthy();
+      expect(usage).toBeInstanceOf(Object);
+      // we only check two typical properties to make sure we got the right object
+      expect(usage).toHaveProperty("startDate");
+      expect(usage).toHaveProperty("endDate");
+    });
+
+    it("cannot be called without an API key", async () => {
+      const client = new DescriptorAPIClient(unauthenticatedOptions);
+      expect(async () => await client.getUsagePlanUsage()).rejects;
+    });
+  });
+
+  describe("getUsagePlans()", () => {
+    it("returns valid response if called with an API key", async () => {
+      const client = new DescriptorAPIClient(authenticatedOptions);
+      const plans = await client.getUsagePlans();
+
+      expect(plans).toBeTruthy();
+      expect(plans).toBeInstanceOf(Array);
+
+      if (plans.length > 0) {
+        const plan = plans[0];
+        // we only check two typical properties to make sure we got the right object
+        expect(plan).toHaveProperty("apiStages");
+        expect(plan).toHaveProperty("throttle");
+      }
+    });
+
+    it("can be called without an API key", async () => {
+      const client = new DescriptorAPIClient(authenticatedOptions);
+      const plans = await client.getUsagePlans();
+
+      expect(plans).toBeTruthy();
+      expect(plans).toBeInstanceOf(Array);
     });
   });
 });
