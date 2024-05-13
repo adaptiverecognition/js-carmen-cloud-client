@@ -6,7 +6,8 @@ JavaScript/TypeScript client for [Carmen Cloud](https://carmencloud.com/) by [Ad
 
 - Vehicle API: v1.4.1
 - Transportation & Cargo API: v1.0.1
-- Storage & Hook API: current version
+- Storage & Hook API: current latest
+- Descriptor API: current latest
 
 ## 🛠️ How to Install
 
