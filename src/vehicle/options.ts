@@ -364,6 +364,8 @@ export const Locations: Record<string, Record<string, InputImageLocation>> = {
     Brunei: { region: "SAS", location: "BRN" },
     ChristmasIsland: { region: "SAS", location: "CXR" },
     KeelingIslands: { region: "SAS", location: "CCK" },
+    Indonesia: { region: "SAS", location: "IDN" },
+    PapuaNewGuinea: { region: "SAS", location: "PNG" },
   },
   MiddleEast: {
     Syria: { region: "ME", location: "SYR" },
