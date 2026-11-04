@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 /*
  * Captures the ApiDocSpec objects carmen-cloud-cdk publishes as API Gateway
  * documentation, without synthesizing any CDK app or touching AWS.

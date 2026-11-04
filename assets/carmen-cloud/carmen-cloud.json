@@ -2744,89 +2744,14 @@
           "list": {
             "type": "array",
             "items": {
-              "type": "object",
-              "properties": {
-                "workspaceId": {
-                  "type": "string",
-                  "description": "The owning workspace."
-                },
-                "apiKeyId": {
-                  "type": "string",
-                  "description": "The API key id."
-                },
-                "name": {
-                  "type": "string",
-                  "description": "Display name."
-                },
-                "value": {
-                  "type": "string",
-                  "description": "The secret API key value (send as `x-api-key`)."
-                },
-                "role": {
-                  "type": "string",
-                  "enum": [
-                    "ADMIN",
-                    "EDITOR",
-                    "ACCOUNTANT"
-                  ],
-                  "description": "Workspace-management role of the key, when it may call the workspace API itself."
-                },
-                "products": {
-                  "type": "object",
-                  "additionalProperties": {
-                    "type": "object",
-                    "properties": {
-                      "enabled": {
-                        "type": "boolean",
-                        "description": "Whether the key may call the product."
-                      },
-                      "limits": {
-                        "type": "object",
-                        "additionalProperties": {
-                          "type": "number"
-                        },
-                        "description": "Per-subscription-type call limits (e.g. `carmen_freeflow`, `carmen_go`)."
-                      },
-                      "apis": {
-                        "type": "object",
-                        "additionalProperties": {
-                          "type": "object",
-                          "properties": {
-                            "apiVersion": {
-                              "type": "string",
-                              "description": "Pinned API version, if any."
-                            },
-                            "engineParameterOverrides": {
-                              "type": "object",
-                              "properties": {},
-                              "description": "Engine parameter overrides, if any."
-                            }
-                          }
-                        },
-                        "description": "Per-API settings of the product (e.g. `vehicle`, `transport`, `pr22`)."
-                      }
-                    },
-                    "required": [
-                      "enabled"
-                    ],
-                    "description": "The key's access to one product."
-                  },
-                  "description": "Product access per product id (`carmen`, `freeflow`, `pr`)."
-                }
-              },
-              "required": [
-                "workspaceId",
-                "apiKeyId",
-                "name",
-                "value"
-              ],
-              "description": "An API key."
+              "$ref": "#/components/schemas/ApiKey"
             },
             "description": "The API keys of this page."
           },
           "lastKey": {
             "type": "string",
-            "description": "Opaque pagination cursor for the next page (`last_key` query parameter); `null` on the last page."
+            "description": "Opaque pagination cursor for the next page (`last_key` query parameter); `null` on the last page.",
+            "nullable": true
           }
         },
         "required": [
@@ -3200,54 +3125,7 @@
       "HookList": {
         "type": "array",
         "items": {
-          "type": "object",
-          "properties": {
-            "status": {
-              "type": "string",
-              "enum": [
-                "pending_confirmation",
-                "confirmed",
-                "deleted"
-              ],
-              "description": "Subscription state. New hooks start `pending_confirmation` until the endpoint confirms the SNS subscription."
-            },
-            "protocol": {
-              "type": "string",
-              "enum": [
-                "http",
-                "https"
-              ],
-              "description": "Derived from the hook URL."
-            },
-            "hookUrl": {
-              "type": "string",
-              "description": "The webhook endpoint URL (stored lowercased)."
-            },
-            "apis": {
-              "type": "object",
-              "additionalProperties": {
-                "type": "boolean"
-              },
-              "description": "The APIs the hook subscribes to; only subscribed APIs are listed (value always `true`)."
-            },
-            "topicName": {
-              "type": "string",
-              "description": "The workspace SNS topic name."
-            },
-            "topicArn": {
-              "type": "string",
-              "description": "The workspace SNS topic ARN."
-            }
-          },
-          "required": [
-            "status",
-            "protocol",
-            "hookUrl",
-            "apis",
-            "topicName",
-            "topicArn"
-          ],
-          "description": "A webhook registration."
+          "$ref": "#/components/schemas/Hook"
         },
         "description": "The workspace's webhooks (may be empty)."
       },
@@ -3518,7 +3396,8 @@
           },
           "topicArn": {
             "type": "string",
-            "description": "The workspace SNS topic ARN when at least one webhook exists; `null` otherwise."
+            "description": "The workspace SNS topic ARN when at least one webhook exists; `null` otherwise.",
+            "nullable": true
           }
         },
         "required": [
@@ -3589,7 +3468,8 @@
           },
           "continuationToken": {
             "type": "string",
-            "description": "Opaque token for the next page; `null` when there are no more events. Pass it back as the `continuation-token` query parameter."
+            "description": "Opaque token for the next page; `null` when there are no more events. Pass it back as the `continuation-token` query parameter.",
+            "nullable": true
           }
         },
         "required": [
@@ -4254,84 +4134,7 @@
       "WorkspaceUserList": {
         "type": "array",
         "items": {
-          "type": "object",
-          "properties": {
-            "workspaceId": {
-              "type": "string",
-              "description": "The workspace."
-            },
-            "userId": {
-              "type": "string",
-              "description": "Cognito user id (a placeholder id while the invitation is pending)."
-            },
-            "email": {
-              "type": "string",
-              "description": "Email address."
-            },
-            "role": {
-              "type": "string",
-              "enum": [
-                "OWNER",
-                "ADMIN",
-                "EDITOR",
-                "ACCOUNTANT"
-              ],
-              "description": "Role in the workspace."
-            },
-            "status": {
-              "type": "string",
-              "enum": [
-                "active",
-                "pending",
-                "rejected"
-              ],
-              "description": "Membership state."
-            },
-            "createdAt": {
-              "type": "number",
-              "description": "Invitation time, epoch milliseconds."
-            },
-            "acceptedAt": {
-              "type": "number",
-              "description": "Acceptance time, epoch milliseconds."
-            },
-            "rejectedAt": {
-              "type": "number",
-              "description": "Rejection time, epoch milliseconds."
-            },
-            "invitedBy": {
-              "type": "string",
-              "description": "Cognito user id of the inviter."
-            },
-            "isOwner": {
-              "type": "boolean",
-              "description": "Whether this member owns the workspace."
-            },
-            "name": {
-              "type": "string",
-              "description": "Full name (from Cognito, active members only)."
-            },
-            "givenName": {
-              "type": "string",
-              "description": "Given name (from Cognito)."
-            },
-            "familyName": {
-              "type": "string",
-              "description": "Family name (from Cognito)."
-            },
-            "inviterName": {
-              "type": "string",
-              "description": "Full name of the inviter (from Cognito)."
-            }
-          },
-          "required": [
-            "workspaceId",
-            "userId",
-            "role",
-            "status",
-            "isOwner"
-          ],
-          "description": "A workspace member or pending invitation."
+          "$ref": "#/components/schemas/WorkspaceUser"
         },
         "description": "The members of the workspace."
       }

@@ -70,7 +70,7 @@ def document(spec, title, base_path, keep, security, security_schemes):
             continue
         paths.setdefault(m["path"], {})[m["method"].lower()] = operation(m, security)
         used.update(_refs(m))
-    schemas = {k: v for k, v in spec["schemas"].items() if k in used}
+    schemas = dedupe_inline_schemas({k: v for k, v in spec["schemas"].items() if k in used})
     doc = {
         "openapi": "3.0.3",
         "info": {"title": title, "version": "1.0.0", "description": spec["description"]},
@@ -81,6 +81,39 @@ def document(spec, title, base_path, keep, security, security_schemes):
     if security_schemes:
         doc["components"]["securitySchemes"] = security_schemes
     return doc
+
+
+def dedupe_inline_schemas(schemas):
+    """Replaces inline copies of named schemas (e.g. array items) with $refs,
+    so generators emit one type per schema instead of anonymous duplicates."""
+    canon = {json.dumps(v, sort_keys=True): k for k, v in schemas.items()}
+
+    def walk(node, top):
+        if isinstance(node, dict):
+            if not top:
+                name = canon.get(json.dumps(node, sort_keys=True))
+                if name:
+                    return schema_ref(name)
+            return {k: walk(v, False) for k, v in node.items()}
+        if isinstance(node, list):
+            return [walk(v, False) for v in node]
+        return node
+
+    return {k: mark_nullable(walk(v, True)) for k, v in schemas.items()}
+
+
+def mark_nullable(node):
+    """Properties documented as possibly `null` (the doc specs carry no nullability) get `nullable: true`."""
+    if isinstance(node, dict):
+        for prop in (node.get("properties") or {}).values():
+            if isinstance(prop, dict) and "`null`" in prop.get("description", "") and "$ref" not in prop:
+                prop["nullable"] = True
+        for v in node.values():
+            mark_nullable(v)
+    elif isinstance(node, list):
+        for v in node:
+            mark_nullable(v)
+    return node
 
 
 def _refs(m):

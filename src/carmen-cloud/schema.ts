@@ -443,43 +443,9 @@ export interface components {
         /** @description One page of API keys. */
         ApiKeyPage: {
             /** @description The API keys of this page. */
-            list: {
-                /** @description The owning workspace. */
-                workspaceId: string;
-                /** @description The API key id. */
-                apiKeyId: string;
-                /** @description Display name. */
-                name: string;
-                /** @description The secret API key value (send as `x-api-key`). */
-                value: string;
-                /**
-                 * @description Workspace-management role of the key, when it may call the workspace API itself.
-                 * @enum {string}
-                 */
-                role?: "ADMIN" | "EDITOR" | "ACCOUNTANT";
-                /** @description Product access per product id (`carmen`, `freeflow`, `pr`). */
-                products?: {
-                    [key: string]: {
-                        /** @description Whether the key may call the product. */
-                        enabled: boolean;
-                        /** @description Per-subscription-type call limits (e.g. `carmen_freeflow`, `carmen_go`). */
-                        limits?: {
-                            [key: string]: number;
-                        };
-                        /** @description Per-API settings of the product (e.g. `vehicle`, `transport`, `pr22`). */
-                        apis?: {
-                            [key: string]: {
-                                /** @description Pinned API version, if any. */
-                                apiVersion?: string;
-                                /** @description Engine parameter overrides, if any. */
-                                engineParameterOverrides?: Record<string, never>;
-                            };
-                        };
-                    };
-                };
-            }[];
+            list: components["schemas"]["ApiKey"][];
             /** @description Opaque pagination cursor for the next page (`last_key` query parameter); `null` on the last page. */
-            lastKey: string;
+            lastKey: string | null;
         };
         /** @description Daily-rollup usage report. Days without usage are omitted (they are not zero-filled). */
         ApiKeyUsageReport: {
@@ -642,28 +608,7 @@ export interface components {
             [key: string]: boolean;
         };
         /** @description The workspace's webhooks (may be empty). */
-        HookList: {
-            /**
-             * @description Subscription state. New hooks start `pending_confirmation` until the endpoint confirms the SNS subscription.
-             * @enum {string}
-             */
-            status: "pending_confirmation" | "confirmed" | "deleted";
-            /**
-             * @description Derived from the hook URL.
-             * @enum {string}
-             */
-            protocol: "http" | "https";
-            /** @description The webhook endpoint URL (stored lowercased). */
-            hookUrl: string;
-            /** @description The APIs the hook subscribes to; only subscribed APIs are listed (value always `true`). */
-            apis: {
-                [key: string]: boolean;
-            };
-            /** @description The workspace SNS topic name. */
-            topicName: string;
-            /** @description The workspace SNS topic ARN. */
-            topicArn: string;
-        }[];
+        HookList: components["schemas"]["Hook"][];
         InvitationSentResult: {
             /** @description The workspace. */
             workspaceId: string;
@@ -772,7 +717,7 @@ export interface components {
                 [key: string]: boolean;
             };
             /** @description The workspace SNS topic ARN when at least one webhook exists; `null` otherwise. */
-            topicArn: string;
+            topicArn: string | null;
         };
         /** @description API name → desired storage state (`true` to enable, `false` to disable). Disabling an API removes it from all hooks; hooks left without APIs are deleted. */
         StorageStatusPatch: {
@@ -800,7 +745,7 @@ export interface components {
                 ipAddress?: string;
             }[];
             /** @description Opaque token for the next page; `null` when there are no more events. Pass it back as the `continuation-token` query parameter. */
-            continuationToken: string;
+            continuationToken: string | null;
         };
         TransferResult: {
             /** @description The transferred workspace. */
@@ -1086,42 +1031,7 @@ export interface components {
             inviterName?: string;
         };
         /** @description The members of the workspace. */
-        WorkspaceUserList: {
-            /** @description The workspace. */
-            workspaceId: string;
-            /** @description Cognito user id (a placeholder id while the invitation is pending). */
-            userId: string;
-            /** @description Email address. */
-            email?: string;
-            /**
-             * @description Role in the workspace.
-             * @enum {string}
-             */
-            role: "OWNER" | "ADMIN" | "EDITOR" | "ACCOUNTANT";
-            /**
-             * @description Membership state.
-             * @enum {string}
-             */
-            status: "active" | "pending" | "rejected";
-            /** @description Invitation time, epoch milliseconds. */
-            createdAt?: number;
-            /** @description Acceptance time, epoch milliseconds. */
-            acceptedAt?: number;
-            /** @description Rejection time, epoch milliseconds. */
-            rejectedAt?: number;
-            /** @description Cognito user id of the inviter. */
-            invitedBy?: string;
-            /** @description Whether this member owns the workspace. */
-            isOwner: boolean;
-            /** @description Full name (from Cognito, active members only). */
-            name?: string;
-            /** @description Given name (from Cognito). */
-            givenName?: string;
-            /** @description Family name (from Cognito). */
-            familyName?: string;
-            /** @description Full name of the inviter (from Cognito). */
-            inviterName?: string;
-        }[];
+        WorkspaceUserList: components["schemas"]["WorkspaceUser"][];
     };
     responses: never;
     parameters: never;
