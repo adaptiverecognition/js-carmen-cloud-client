@@ -20,6 +20,28 @@ npm test
 This will run the tests in the `test` directory. Please make sure that you have a
 `.env` file in the root of the project as described in the setup section.
 
+## Updating the API models
+
+- **Vehicle / Transportation & Cargo API**: `npm run update-types` downloads the
+  response JSON schemas from API Gateway (needs AWS credentials, e.g.
+  `AWS_PROFILE=carmen-cloud-ro`), then `npm run generate-types` regenerates
+  `src/*/response.ts`.
+- **Carmen Cloud API and Authentication**: the OpenAPI documents in
+  `assets/carmen-cloud/` are built from the API documentation specs in
+  `carmen-cloud-cdk` (the same specs CDK publishes to API Gateway):
+
+  ```sh
+  cd ../../carmen-cloud-cdk
+  TS_NODE_TRANSPILE_ONLY=1 node -r ts-node/register \
+    ../libraries/js-carmen-cloud-client/scripts/openapi/dump-cdk-api-docs.ts "$PWD" /tmp/specs.json
+  cd -
+  python3 scripts/openapi/build_openapi.py /tmp/specs.json assets/carmen-cloud
+  npm run generate-types:carmen-cloud
+  ```
+
+  Only the bearer-token routes are included; the console-only SigV4 routes
+  (workspace list/create, invitations) are not part of the API-key surface.
+
 ## Development Workflow
 
 - New features are developed in the `develop` branch.

@@ -8,3 +8,7 @@ export { TransportAPIOptions, CodeType } from "./transport/options";
 export { TransportationCargoAPIResponse } from "./transport/response";
 
 export { CloudServiceRegion, CommonClientOptions } from "./http";
+
+export { CarmenAPIError } from "./errors";
+export { AuthClient, AuthClientOptions, AccessToken, JsonWebKeySet } from "./auth";
+export * from "./carmen-cloud";

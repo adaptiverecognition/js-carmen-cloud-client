@@ -1,0 +1,206 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Carmen Cloud Authentication",
+    "version": "1.0.0",
+    "description": "Carmen Cloud auth API: exchanges an API key for a short-lived bearer access token accepted on the `/workspace/{workspaceId}/**` routes, and serves the public signing keys that verify those tokens."
+  },
+  "servers": [
+    {
+      "url": "https://api.carmencloud.com/auth"
+    }
+  ],
+  "paths": {
+    "/.well-known/jwks.json": {
+      "get": {
+        "operationId": "getJwks",
+        "summary": "Public signing keys (JWKS)",
+        "description": "The JSON Web Key Set verifying tokens issued by `POST /token`. Standard well-known placement relative to the token issuer, so any off-the-shelf JWT library can verify the tokens.",
+        "tags": [
+          "Auth"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The current key set.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonWebKeySet"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Cacheable for 15 minutes.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/token": {
+      "post": {
+        "operationId": "createAccessToken",
+        "summary": "Exchange an API key for a bearer access token",
+        "description": "Authenticates the `x-api-key` header and answers a short-lived (60-minute) bearer access token carrying the key’s workspace and role, plus the `workspace_id` to call the workspace routes with. The API key remains the long-lived credential: request a new token here whenever the previous one expires (there are no refresh tokens). Issued tokens cannot be revoked — they stay valid until expiry even if the key is disabled.",
+        "tags": [
+          "Auth"
+        ],
+        "parameters": [
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "required": true,
+            "description": "The Carmen Cloud API key to authenticate.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Token minted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Always `no-store` (RFC 6749 §5.1).",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid API key (`invalid_client`), or a key whose role cannot use the bearer surface (`access_denied`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Throttled — retry with backoff."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "JsonWebKeySet": {
+        "type": "object",
+        "properties": {
+          "keys": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kty": {
+                  "type": "string",
+                  "description": "Key type; always `RSA`."
+                },
+                "n": {
+                  "type": "string",
+                  "description": "RSA modulus (base64url)."
+                },
+                "e": {
+                  "type": "string",
+                  "description": "RSA public exponent (base64url)."
+                },
+                "kid": {
+                  "type": "string",
+                  "description": "Key id — matches the `kid` header of minted tokens."
+                },
+                "alg": {
+                  "type": "string",
+                  "description": "Signature algorithm; always `RS256`."
+                },
+                "use": {
+                  "type": "string",
+                  "description": "Key use; always `sig`."
+                }
+              }
+            },
+            "description": "The active signing key(s). Two entries appear briefly during key rotation."
+          }
+        },
+        "required": [
+          "keys"
+        ],
+        "description": "JSON Web Key Set (RFC 7517)."
+      },
+      "OAuthErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "OAuth-style error code: `invalid_client` (missing/unknown API key) or `access_denied` (the key cannot use the bearer surface)."
+          },
+          "error_description": {
+            "type": "string",
+            "description": "Human-readable explanation."
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "description": "OAuth-style error envelope (RFC 6749 §5.2)."
+      },
+      "TokenResponse": {
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "description": "The bearer access token (RS256 JWT). Present it as `Authorization: Bearer <token>` on the `/workspace/{workspaceId}/**` routes."
+          },
+          "token_type": {
+            "type": "string",
+            "description": "Always `Bearer`."
+          },
+          "expires_in": {
+            "type": "integer",
+            "description": "Token lifetime in seconds (RFC 6749 §5.1); 3600 today. Tokens cannot be revoked once issued — request a new one after expiry."
+          },
+          "expires_at": {
+            "type": "integer",
+            "description": "Absolute expiry as unix epoch seconds (equals the token’s `exp` claim) — a convenience for wall-clock renewal scheduling."
+          },
+          "workspace_id": {
+            "type": "string",
+            "description": "The workspace the API key belongs to — the `{workspaceId}` to use on the workspace routes; no separate discovery call needed."
+          },
+          "role": {
+            "type": "string",
+            "description": "The API key’s workspace role, e.g. `ADMIN`."
+          },
+          "scope": {
+            "type": "string",
+            "description": "The granted scope, `cc.workspace.<role>.<workspaceId>` — the same format Cloud-Console tokens carry."
+          }
+        },
+        "required": [
+          "access_token",
+          "token_type",
+          "expires_in",
+          "expires_at",
+          "workspace_id",
+          "role",
+          "scope"
+        ],
+        "description": "A successful token mint."
+      }
+    }
+  }
+}
