@@ -2680,12 +2680,7 @@
           },
           "role": {
             "type": "string",
-            "enum": [
-              "ADMIN",
-              "EDITOR",
-              "ACCOUNTANT"
-            ],
-            "description": "Workspace-management role of the key, when it may call the workspace API itself."
+            "description": "Workspace-management role of the key, when it may call the workspace API itself. Known values: `ADMIN`, `EDITOR`, `ACCOUNTANT`; others may appear."
           },
           "products": {
             "type": "object",
@@ -3142,12 +3137,7 @@
           },
           "role": {
             "type": "string",
-            "enum": [
-              "ADMIN",
-              "EDITOR",
-              "ACCOUNTANT"
-            ],
-            "description": "The offered role."
+            "description": "The offered role. Known values: `ADMIN`, `EDITOR`, `ACCOUNTANT`; others may appear."
           },
           "status": {
             "type": "string",
@@ -4068,13 +4058,7 @@
           },
           "role": {
             "type": "string",
-            "enum": [
-              "OWNER",
-              "ADMIN",
-              "EDITOR",
-              "ACCOUNTANT"
-            ],
-            "description": "Role in the workspace."
+            "description": "Role in the workspace. Known values: `OWNER`, `ADMIN`, `EDITOR`, `ACCOUNTANT`; others may appear."
           },
           "status": {
             "type": "string",

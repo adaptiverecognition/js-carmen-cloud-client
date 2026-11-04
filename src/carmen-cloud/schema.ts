@@ -414,11 +414,8 @@ export interface components {
             name: string;
             /** @description The secret API key value (send as `x-api-key`). */
             value: string;
-            /**
-             * @description Workspace-management role of the key, when it may call the workspace API itself.
-             * @enum {string}
-             */
-            role?: "ADMIN" | "EDITOR" | "ACCOUNTANT";
+            /** @description Workspace-management role of the key, when it may call the workspace API itself. Known values: `ADMIN`, `EDITOR`, `ACCOUNTANT`; others may appear. */
+            role?: string;
             /** @description Product access per product id (`carmen`, `freeflow`, `pr`). */
             products?: {
                 [key: string]: {
@@ -614,11 +611,8 @@ export interface components {
             workspaceId: string;
             /** @description The invited email address. */
             email: string;
-            /**
-             * @description The offered role.
-             * @enum {string}
-             */
-            role: "ADMIN" | "EDITOR" | "ACCOUNTANT";
+            /** @description The offered role. Known values: `ADMIN`, `EDITOR`, `ACCOUNTANT`; others may appear. */
+            role: string;
             /**
              * @description Always `pending`.
              * @enum {string}
@@ -1001,11 +995,8 @@ export interface components {
             userId: string;
             /** @description Email address. */
             email?: string;
-            /**
-             * @description Role in the workspace.
-             * @enum {string}
-             */
-            role: "OWNER" | "ADMIN" | "EDITOR" | "ACCOUNTANT";
+            /** @description Role in the workspace. Known values: `OWNER`, `ADMIN`, `EDITOR`, `ACCOUNTANT`; others may appear. */
+            role: string;
             /**
              * @description Membership state.
              * @enum {string}

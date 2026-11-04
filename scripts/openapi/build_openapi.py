@@ -99,7 +99,26 @@ def dedupe_inline_schemas(schemas):
             return [walk(v, False) for v in node]
         return node
 
-    return {k: mark_nullable(walk(v, True)) for k, v in schemas.items()}
+    return {k: open_response_enums(k, mark_nullable(walk(v, True))) for k, v in schemas.items()}
+
+
+# Response properties whose documented enum is narrower than what the API returns
+# (dev returns e.g. a lowercase legacy `owner` key role). They are typed as plain
+# strings so clients that validate responses do not reject them.
+OPEN_RESPONSE_ENUMS = {
+    "ApiKey": {"role"},
+    "InvitationSentResult": {"role"},
+    "WorkspaceUser": {"role"},
+}
+
+
+def open_response_enums(name, schema):
+    for prop_name in OPEN_RESPONSE_ENUMS.get(name, ()):
+        prop = (schema.get("properties") or {}).get(prop_name)
+        if prop and "enum" in prop:
+            values = ", ".join(f"`{v}`" for v in prop.pop("enum"))
+            prop["description"] = f"{prop.get('description', '').rstrip()} Known values: {values}; others may appear.".strip()
+    return schema
 
 
 def mark_nullable(node):
