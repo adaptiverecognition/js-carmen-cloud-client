@@ -277,6 +277,44 @@ export interface VehicleAPIResponse {
          * A list of hints that help improve recognition accuracy. (*Available since version 1.4.*)
          */
         frameTooltips?: [] | [string];
+        /**
+         * The vehicle's color mapped to a standardized color name. (*Available since version 1.4.2.*)
+         */
+        standardColorName?: string;
+        /**
+         * The physical dimensions of the recognized vehicle model. (*Available since version 1.4.2.*)
+         */
+        dimensions?: {
+          /**
+           * Vehicle width.
+           */
+          width?: number;
+          /**
+           * Vehicle height.
+           */
+          height?: number;
+          /**
+           * Vehicle length.
+           */
+          length?: number;
+          [k: string]: unknown;
+        };
+        /**
+         * The vehicle model generation. (*Available since version 1.4.1.*)
+         */
+        generation?: string;
+        /**
+         * The confidence level of vehicle generation recognition. (*Available since version 1.4.1.*)
+         */
+        generationConfidence?: number;
+        /**
+         * The vehicle model variation. (*Available since version 1.4.1.*)
+         */
+        variation?: string;
+        /**
+         * The confidence level of vehicle variation recognition. (*Available since version 1.4.1.*)
+         */
+        variationConfidence?: number;
         [k: string]: unknown;
       };
       /**

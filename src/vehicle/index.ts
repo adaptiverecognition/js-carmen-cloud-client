@@ -15,7 +15,7 @@ export * from "./response";
  * A client for interacting with the Carmen Cloud Vehicle API.
  */
 export class VehicleAPIClient {
-  supportedAPIVersion = "1.4.1";
+  supportedAPIVersion = "1.4.2";
   private apiUrl: string;
   private http: AxiosInstance;
 
