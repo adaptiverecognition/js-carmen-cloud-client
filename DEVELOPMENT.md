@@ -4,7 +4,7 @@
 
 ```sh
 nvm use # if you use nvm, otherwise install the node version in .nvmrc
-npm install
+npm ci --ignore-scripts
 ```
 
 You also need to set environment variables for the tests to run. You can do this
@@ -56,13 +56,14 @@ This will run the tests in the `test` directory. Please make sure that you have 
       the new version. Push the commit and the tag to the remote repository:
       `git push --tags origin master`.
 - Always make sure that the tests run after updating the version number. There
-  is a test case that checks that the `supportedAPIVersion` properties of the 
+  is a (currently disabled) integration test that checks that the `supportedAPIVersion` properties of the 
   client classes (`VehicleAPIClient` and `TransportAPIClient`) match the version 
   numbers returned by the respective APIs. This test case will fail if the 
   version number is not updated.
 - Please also pay attention to the version numbers in the README.md file. The
   version numbers in the README.md file should be updated to match the version
   numbers in the `supportedAPIVersion` properties of the client classes.
-- After the version has been updated, run `npm publish --access public` to
-  publish the new version to npm. (You need to be logged in to npm for this to
-  work.)
+- Pushing the version tag runs `.github/workflows/release.yml`, which publishes
+  the package to npm with trusted publishing (OIDC, with provenance). No npm
+  token is needed; the trusted publisher is configured once in the package
+  settings on npmjs.com.

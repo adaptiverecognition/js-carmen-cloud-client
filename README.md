@@ -1,13 +1,12 @@
 # Carmen Cloud Client by Adaptive Recognition
 
-JavaScript/TypeScript client for [Carmen Cloud](https://carmencloud.com/) by [Adaptive Recognition](https://adaptiverecognition.com/). This unified library provides you with access to the **Vehicle API**, **Transportation & Cargo API** and the **Storage & Hook API**.
+JavaScript/TypeScript client for [Carmen Cloud](https://carmencloud.com/) by [Adaptive Recognition](https://adaptiverecognition.com/). This unified library provides you with access to the **Vehicle API**, the **Transportation & Cargo API** and the **Carmen Cloud API**.
 
 ## Supported API Versions
 
 - Vehicle API: v1.4.2
 - Transportation & Cargo API: v1.0.1
-- Storage & Hook API: current latest
-- Descriptor API: current latest
+- Carmen Cloud API: current latest
 
 ## 🛠️ How to Install
 
@@ -17,7 +16,7 @@ npm install --save @adaptive-recognition/carmen-cloud-client
 
 ## 🚀 Usage
 
-The four APIs available have separate client classes. For basic usage, see the examples below.
+The three APIs available have separate client classes. For basic usage, see the examples below.
 
 ### 🚗 Vehicle API
 
@@ -58,100 +57,69 @@ async function recognize() {
 recognize().catch(console.error);
 ```
 
-### 📦 Storage & Hook API
+### ☁️ Carmen Cloud API
+
+Manage your workspace programmatically: members, API keys, billing, usage
+reports, stored events, event storage and webhooks. Use an API key with a
+workspace role (`ADMIN`, `EDITOR` or `ACCOUNTANT`); the client exchanges it for
+short-lived bearer tokens and renews them automatically.
 
 ```typescript
-import { StorageAndHookAPIClient } from ".";
+import { CarmenCloudClient } from "@adaptive-recognition/carmen-cloud-client";
 
-const client = new StorageAndHookAPIClient({
-  apiKey: '<YOUR_API_KEY>',
-  cloudServiceRegion: 'EU'
-});
+const client = new CarmenCloudClient({ apiKey: "<YOUR_API_KEY>" });
 
-// List Events
-const events = await client.getEvents('vehicle');
-console.log('events:', events);
+async function manageWorkspace() {
+    const workspace = await client.workspace.get();
+    console.log(workspace.name, workspace.subscriptions);
 
-// Get Storage Status
-const status = await client.getStorageStatus();
-console.log('status:', status);
+    // API keys
+    const key = await client.apiKeys.create({ name: "ci", role: "EDITOR" });
+    for await (const k of client.apiKeys.listAll()) console.log(k.name);
+    await client.apiKeys.rotate(key.apiKeyId);
 
-// Update Storage Status
-const updatedStatus = await client.updateStorageStatus(
-  { transport: true }
-);
-console.log('updatedStatus:', updatedStatus);
+    // Usage (YYYY-MM-DD)
+    const usage = await client.usage.getWorkspaceUsage({ from: "2026-10-01", to: "2026-10-31" });
+    console.log(usage.totalQuantity);
 
-// Create Hook
-const createdHook = await client.createHook({
-  hookUrl: 'https://your-domain.com/your-hook-path',
-  apis: ['vehicle', 'transport']
-});
-console.log('createdHook:', createdHook);
+    // Members
+    await client.members.invite({ email: "colleague@example.com", role: "ACCOUNTANT" });
 
-// List Hooks
-const hooks = await client.getHooks();
-console.log('hooks:', hooks);
+    // Event storage and webhooks
+    await client.storage.updateStatus({ vehicle: true });
+    await client.hooks.create({ hookUrl: "https://example.com/carmen-hook", apis: { vehicle: true } });
+    const events = await client.events.list("vehicle", { limit: 10, order: "desc" });
+    console.log(events.events.length);
+}
 
-// Get Hook
-const hook = await client.getHook('https://your-domain.com/your-hook-path');
-console.log('hook:', hook);
-
-// Update Hook
-const updatedHook = await client.updateHook(
-  'https://your-domain.com/your-hook-path',
-  { vehicle: true, transport: true }
-);
-console.log('updatedHook:', updatedHook);
-
-// Delete Hook
-await client.deleteHook('https://your-domain.com/your-hook-path');
+manageWorkspace().catch(console.error);
 ```
 
-### ✍️ Descriptor API
+| Property | Operations |
+| --- | --- |
+| `workspace` | `get`, `rename`, `delete`\*, `transferOwnership`\* |
+| `members` | `list`, `invite`, `get`, `updateRole`, `remove` |
+| `apiKeys` | `list`, `listAll`, `create`, `get`, `update`, `rotate`, `delete` |
+| `billing` | `updateSubscription`, `updateBillingProfile`, `createAuthSession`, `createPortalSession`, `previewInvoice`, `updateUsageCap`\* |
+| `usage` | `getWorkspaceUsage`, `getApiKeyUsage` |
+| `events` | `list` |
+| `storage` | `getStatus`, `updateStatus` |
+| `hooks` | `list`, `create`, `get`, `update`, `delete` |
 
-```typescript
-import { DescriptorAPIClient, DescriptorAPIOptions } from ".";
+\* Requires a signed-in user's session token instead of an API key: pass
+`accessToken` (a string or a function returning one) and `workspaceId`
+instead of `apiKey`.
 
-const options: DescriptorAPIOptions = {
-  apiKey: "<YOUR_API_KEY>",
-  cloudServiceRegion: 'EU'
-};
-const client = new DescriptorAPIClient(options);
+Failed calls throw `CarmenAPIError` with the HTTP `status` and the API's
+error `message`. To get a bearer token for your own HTTP client, use
+`new AuthClient({ apiKey }).getAccessToken()`.
 
-const apis = await client.getApis({ detailed: true });
-console.log('apis:', apis);
+### Upgrading from 2.x
 
-const dimensions = await client.getDimensions();
-console.log('dimensions:', dimensions);
-
-const freeCallCount = await client.getFreeCallCount('carmen');
-console.log('freeCallCount:', freeCallCount);
-
-const paidSubscriptionUsage = await client.getPaidSubscriptionUsage('carmen');
-console.log('paidSubscriptionUsage:', paidSubscriptionUsage);
-
-const paidSubscriptions = await client.getPaidSubscriptions();
-console.log('paidSubscriptions:', paidSubscriptions);
-
-const prices = await client.getPrices('carmen', 'HU');
-console.log('prices:', prices);
-
-const products = await client.getProducts();
-console.log('products:', products);
-
-const region = await client.getRegion();
-console.log('region:', region);
-
-const usagePlanSubscriptions = await client.getUsagePlanSubscriptions();
-console.log('usagePlanSubscriptions:', usagePlanSubscriptions);
-
-const usagePlanUsage = await client.getUsagePlanUsage();
-console.log('usagePlanUsage:', usagePlanUsage);
-
-const usagePlans = await client.getUsagePlans();
-console.log('usagePlans:', usagePlans);
-```
+- `StorageAndHookAPIClient` is replaced by `CarmenCloudClient` (`storage`,
+  `hooks` and `events`).
+- `DescriptorAPIClient` is removed: the Descriptor API is deprecated.
+- Node.js 20 or newer is required.
 
 ## 🔧 Development
 
