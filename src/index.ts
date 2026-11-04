@@ -7,9 +7,4 @@ export { TransportAPIClient } from "./transport";
 export { TransportAPIOptions, CodeType } from "./transport/options";
 export { TransportationCargoAPIResponse } from "./transport/response";
 
-export { StorageAndHookAPIClient } from "./storage-and-hook";
-export { StorageAndHookAPIOptions } from "./storage-and-hook/options";
-export { StorageStatusResponse } from "./storage-and-hook/storagestatusresponse";
-
-export { DescriptorAPIClient } from "./descriptor";
-export { DescriptorAPIOptions, APIFilters } from "./descriptor/options";
+export { CloudServiceRegion, CommonClientOptions } from "./http";

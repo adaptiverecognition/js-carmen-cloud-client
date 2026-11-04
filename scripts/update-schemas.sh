@@ -22,39 +22,8 @@ set_api_values() {
             )
             schema_dir="./assets/transport"
             ;;
-        "storage-and-hook")
-            api_id="24ut7ue8d8"
-            models=(
-                "APIStorageStatusRequest"
-                "CreateHookRequest"
-                "EventsResponse"
-                "Hook"
-                "Hooks"
-                "OKResponse"
-                "StorageStatusResponse"
-                "UpdateHookRequest"
-            )
-            schema_dir="./assets/storage-and-hook"
-            ;;
-        "descriptor")
-            api_id="yqh6c9omp7"
-            models=(
-                "APIListResponse"
-                "DimensionListReponse"
-                "PaidSubscriptionListResponse"
-                "PaidSubscriptionUsageResponse"
-                "ProductsResponse"
-                "UsagePlanListResponse"
-                "UsagePlanSubscriptionListResponse"
-                "Prices"
-                # The output of the type generator for this schema does not
-                # compile, so I fixed it manually.
-                # "UsagePlanUsageResponse"
-            )
-            schema_dir="./assets/descriptor"
-            ;;
         *)
-            echo "Invalid API parameter. Allowed values: vehicle, transport, storage-and-hook, descriptor"
+            echo "Invalid API parameter. Allowed values: vehicle, transport"
             exit 1
             ;;
     esac
@@ -62,7 +31,7 @@ set_api_values() {
 
 # Check if the API parameter is provided
 if [ $# -eq 0 ]; then
-    echo "Please provide the API parameter (vehicle, transport, storage-and-hook, descriptor)."
+    echo "Please provide the API parameter (vehicle, transport)."
     exit 1
 fi
 

@@ -1,8 +1,0 @@
-{
-    "title": "Hooks",
-    "description": "An array of hooks.",
-    "type": "array",
-    "items": {
-        "$ref": "Hook.schema.json"
-    }
-}

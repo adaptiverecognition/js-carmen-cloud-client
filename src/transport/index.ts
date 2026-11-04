@@ -1,10 +1,9 @@
 import fs from "fs";
 import FormData from "form-data";
-import axios from "axios";
-import axiosRetry from 'axios-retry';
+import { AxiosInstance } from "axios";
 import urlcat from "urlcat";
-import isStream from "isstream";
 import { CarmenAPIConfigError } from "../errors";
+import { createHttpClient, selectApiBaseUrl } from "../http";
 import { TransportAPIOptions } from "./options";
 import { TransportationCargoAPIResponse } from "./response";
 import { Stream } from "stream";
@@ -15,12 +14,10 @@ export * from "./response";
 export class TransportAPIClient {
   supportedAPIVersion = "1.0.1";
   private apiUrl: string;
+  private http: AxiosInstance;
 
   constructor(private options: TransportAPIOptions) {
-    axiosRetry(axios, {
-      retries: options.retryCount || 3,
-      retryDelay: axiosRetry.exponentialDelay
-    });
+    this.http = createHttpClient(options);
     this.validateOptions(options);
     this.apiUrl = this.getParametrizedApiUrl();
   }
@@ -33,7 +30,7 @@ export class TransportAPIClient {
     }
     const formData = this.createFormData(imageDataOrPaths);
     const headers = this.createRequestHeaders(formData);
-    const httpResponse = await axios.post(this.apiUrl, formData, { headers });
+    const httpResponse = await this.http.post(this.apiUrl, formData, { headers });
     const response = httpResponse.data as TransportationCargoAPIResponse;
 
     if (response.version !== this.supportedAPIVersion) {
@@ -52,7 +49,7 @@ export class TransportAPIClient {
   private getImageBytes(
     imagePathOrBuffer: string | Buffer | fs.ReadStream
   ): Buffer | Stream {
-    if (isStream(imagePathOrBuffer) || Buffer.isBuffer(imagePathOrBuffer)) {
+    if (imagePathOrBuffer instanceof Stream || Buffer.isBuffer(imagePathOrBuffer)) {
       return imagePathOrBuffer as Buffer | Stream;
     } else if (
       typeof imagePathOrBuffer === "string" &&
@@ -100,28 +97,10 @@ export class TransportAPIClient {
   }
 
   private getParametrizedApiUrl() {
-    const baseUrl = this.selectApiBaseUrl();
+    const baseUrl = selectApiBaseUrl(this.options);
     return urlcat(baseUrl, "/transport/:type", {
       type: this.options.type,
     });
   }
 
-  private selectApiBaseUrl() {
-    if (this.options.endpoint) {
-      return this.options.endpoint;
-    }
-    if (this.options.cloudServiceRegion === "EU") {
-      return "https://eu-central-1.api.carmencloud.com";
-    }
-    if (this.options.cloudServiceRegion === "US") {
-      return "https://us-east-1.api.carmencloud.com";
-    }
-    if (this.options.cloudServiceRegion && this.options.cloudServiceRegion !== "AUTO") {
-      throw new CarmenAPIConfigError(
-        `Invalid cloud service region: '${this.options.cloudServiceRegion}'.`
-      );
-    }
-    // cloudServiceRegion is not set or AUTO, use latency-based routing
-    return "https://api.carmencloud.com";
-  }
 }
