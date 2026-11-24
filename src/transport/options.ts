@@ -54,30 +54,38 @@ export interface TransportAPIOptions {
   type: CodeType;
 
   /**
-   * Disables searching for and reading the last 4 digits of the ISO
-   * container code.
+   * Legacy additional-code switch for the `iso` and `eu-rail` code types.
+   * Sends `X-Disable-Iso-Code`. On OCR engines from `7.3.20.46` it is only a
+   * fallback, used when `disableAdditionalCode` is not set.
    *
-   * NOTE: This parameter is only used when using the iso code type,
-   * when searching for other code types, it has no effect.
+   * @deprecated Use `disableAdditionalCode` instead.
    */
   disableISOCode?: boolean;
 
   /**
-   * The codes the engine can recognize contain a checksum digit which
-   * can be used to check the validity of the digits read. A matching
-   * checksum indicates a high probability of the recognition result being
-   * correct. The Transportation & Cargo API verifies the checksum by default
-   * and discards any results where the check fails. By sending true as the
-   * value of this header, you can disable this check and receive all codes the
-   * engine recognized - even those known to be incorrect.
+   * Disables additional code reading (such as the ISO equipment/type code) for
+   * the `iso` and `eu-rail` code types. Sends `X-Disable-Additional-Code`.
+   * Supported by OCR engines from `7.3.20.46`; other code types ignore it.
+   * When set, it takes precedence over `disableISOCode`, including when its
+   * value is `false`.
+   */
+  disableAdditionalCode?: boolean;
+
+  /**
+   * Sends the legacy `X-Disable-Checksum-Check` header, kept for older OCR
+   * engines. From `7.3.20.46` the engine handles checksum checks internally
+   * and they cannot be configured, so this option has no effect there.
+   *
+   * @deprecated Checksum checks are not configurable from OCR engine
+   * `7.3.20.46` onward.
    */
   disableChecksumCheck?: boolean;
 
   /**
    * Enables full US ACCR code recognition.
    *
-   * NOTE: This parameter is only used when using the accr_usa code type, when
-   * searching for other code types, it has no effect.
+   * Sends `X-Enable-Full-Us-Accr-Code`. Applies only to the `truck` code type;
+   * other code types ignore it.
    */
   enableFullUsAccrCode?: boolean;
 
