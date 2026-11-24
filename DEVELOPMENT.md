@@ -17,8 +17,18 @@ as a template.
 npm test
 ```
 
-This will run the tests in the `test` directory. Please make sure that you have a
-`.env` file in the root of the project as described in the setup section.
+This will run the tests in the `test` directory. The Vehicle and
+Transportation & Cargo API suites call the live APIs, so they are skipped
+unless `TEST_DEV_API_KEY` is set. The Carmen Cloud API tests mock HTTP with
+nock and always run.
+
+The dev recognition APIs only accept requests from the office LAN (WAF
+`AR-EU-DEV-API-ACL`), so run the live tests against dev from the office or
+the VPN. GitHub-hosted runners can't reach dev: CI runs the unit tests on
+every push and pull request, and the live tests only in the manually
+triggered `live` job (Actions > CI > Run workflow), against prod with the
+test-workspace keys. For local live runs, create the `.env` file described in
+the setup section.
 
 ## Updating the API models
 
@@ -56,7 +66,7 @@ This will run the tests in the `test` directory. Please make sure that you have 
       the new version. Push the commit and the tag to the remote repository:
       `git push --tags origin master`.
 - Always make sure that the tests run after updating the version number. There
-  is a (currently disabled) integration test that checks that the `supportedAPIVersion` properties of the 
+  is a live integration test that checks that the `supportedAPIVersion` properties of the 
   client classes (`VehicleAPIClient` and `TransportAPIClient`) match the version 
   numbers returned by the respective APIs. This test case will fail if the 
   version number is not updated.
