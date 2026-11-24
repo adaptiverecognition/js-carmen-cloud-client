@@ -24,7 +24,10 @@ const usProdAPIKey = process.env.TEST_US_PROD_API_KEY || "";
 
 jest.setTimeout(30000);
 
-xdescribe("TransportAPIClient", () => {
+// Live tests: they call the recognition API, so they run only with a key.
+const describeLive = process.env.TEST_DEV_API_KEY ? describe : describe.skip;
+
+describeLive("TransportAPIClient", () => {
   it("throws if both endpoint is undefined and cloudServiceRegion is invalid", () => {
     expect(() => {
       const { endpoint: _, ...options } = testOptions; // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -198,9 +201,9 @@ xdescribe("TransportAPIClient", () => {
   it("has a client version that matches the API response version and the version in the README", async () => {
     const client = new TransportAPIClient(testOptions);
     const response = await client.send("./test/transport/accr_usa01.jpg");
-    const clientVersion = semver.parse(client.supportedAPIVersion);
-    const responseVersion = semver.parse(response.version);
-    const readmeVersion = semver.parse(extractAPIVersionFromReadme('Transportation & Cargo API'));
+    const clientVersion = semver.coerce(client.supportedAPIVersion);
+    const responseVersion = semver.coerce(response.version);
+    const readmeVersion = semver.coerce(extractAPIVersionFromReadme('Transportation & Cargo API'));
     expect(clientVersion?.major).toBe(responseVersion?.major);
     expect(clientVersion?.minor).toBe(responseVersion?.minor);
     expect(clientVersion?.major).toBe(readmeVersion?.major);

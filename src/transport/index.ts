@@ -7,6 +7,7 @@ import { createHttpClient, selectApiBaseUrl } from "../http";
 import { TransportAPIOptions } from "./options";
 import { TransportationCargoAPIResponse } from "./response";
 import { Stream } from "stream";
+import { warnOnApiVersionMismatch } from "../version";
 
 export * from "./options";
 export * from "./response";
@@ -33,9 +34,7 @@ export class TransportAPIClient {
     const httpResponse = await this.http.post(this.apiUrl, formData, { headers });
     const response = httpResponse.data as TransportationCargoAPIResponse;
 
-    if (response.version !== this.supportedAPIVersion) {
-      console.warn(`WARNING: API version mismatch. Expected ${this.supportedAPIVersion}, got ${response.version}.`);
-    }
+    warnOnApiVersionMismatch(this.supportedAPIVersion, response.version);
 
     return response;
   }
