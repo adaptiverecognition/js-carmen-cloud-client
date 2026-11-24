@@ -1,7 +1,10 @@
 name: Release
 
-# Publishes to npm when a version tag (e.g. v3.0.0) is pushed, using npm
-# trusted publishing (OIDC): no npm token is stored in this repository.
+# Stages a release on npm when a version tag (e.g. v3.0.0) is pushed, using npm
+# trusted publishing (OIDC): no npm token is stored in this repository. The
+# trusted publisher may only stage (`npm stage publish`): a maintainer approves
+# the staged version with 2FA on npmjs.com (or `npm stage approve`) before it
+# becomes public.
 # One-time setup on npmjs.com: package settings -> Trusted publishing ->
 # GitHub Actions, repository adaptiverecognition/js-carmen-cloud-client,
 # workflow release.yml, environment npm.
@@ -31,4 +34,6 @@ jobs:
       - run: npm run lint
       - run: npm run build
       - run: npm test -- --coverage=false
-      - run: npm publish --access public --provenance
+      # The bundled npm may predate `npm stage`.
+      - run: npm install -g npm@11.16.0
+      - run: npm stage publish --access public --provenance

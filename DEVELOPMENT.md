@@ -73,7 +73,9 @@ the setup section.
 - Please also pay attention to the version numbers in the README.md file. The
   version numbers in the README.md file should be updated to match the version
   numbers in the `supportedAPIVersion` properties of the client classes.
-- Pushing the version tag runs `.github/workflows/release.yml`, which publishes
-  the package to npm with trusted publishing (OIDC, with provenance). No npm
+- Pushing the version tag runs `.github/workflows/release.yml`, which stages
+  the package on npm with trusted publishing (OIDC, with provenance). No npm
   token is needed; the trusted publisher is configured once in the package
-  settings on npmjs.com.
+  settings on npmjs.com, and it may only stage. To release, approve the staged
+  version with 2FA on npmjs.com, or run `npm stage list` and then
+  `npm stage approve <stage-id>`.
