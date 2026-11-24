@@ -71,6 +71,10 @@ export class TransportAPIClient {
       "X-Api-Key": this.options.apiKey,
     };
     addIfSet(headers, "disableISOCode", "x-disable-iso-code");
+    // Sent whenever set: an explicit false overrides disableISOCode.
+    if (this.options.disableAdditionalCode !== undefined) {
+      headers["x-disable-additional-code"] = String(this.options.disableAdditionalCode);
+    }
     addIfSet(headers, "disableChecksumCheck", "x-disable-checksum-check");
     addIfSet(headers, "enableFullUsAccrCode", "x-enable-full-us-accr-code");
     addIfSet(headers, "disableImageResizing", "x-disable-image-resizing");
