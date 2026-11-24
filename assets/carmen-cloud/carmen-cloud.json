@@ -1,0 +1,4134 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Carmen Cloud API",
+    "version": "1.0.0",
+    "description": "The Carmen Cloud API: workspaces and their members, API keys, Stripe billing sessions, usage reports, stored recognition events and Storage & Hooks settings. Mounted at the `workspace` base path of the shared API domain — public paths are `/workspace/…` while this document's operation paths are relative to the base path. The per-workspace routes authenticate with a workspace bearer token in the `Authorization` header — API keys are exchanged for one at `POST /auth/token`. Bearer scopes are baked into the token at issue time, so newly granted workspaces or roles need a token refresh. (The workspace-collection and invitation routes are used by the Carmen Cloud console, authenticate with AWS SigV4, and are not part of the API-key surface.)"
+  },
+  "servers": [
+    {
+      "url": "https://api.carmencloud.com/workspace"
+    }
+  ],
+  "paths": {
+    "/{workspaceId}": {
+      "get": {
+        "operationId": "getWorkspace",
+        "summary": "Get a workspace",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header; the caller needs a matching workspace scope. Enriched with the Stripe customer and pending-payment state when the workspace has a Stripe customer.",
+        "tags": [
+          "Workspaces"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The workspace.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workspace"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such (active) workspace.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or the token grants no access to this workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "renameWorkspace",
+        "summary": "Rename a workspace",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header; the caller needs a matching workspace scope. Only the workspace owner may rename — the human owner, or a key-minted token whose API key carries the `owner` role in this workspace (rename is a management *capability*, so machine principals qualify).",
+        "tags": [
+          "Workspaces"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The updated workspace.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workspace"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing name, or the caller is not the owner.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or the token grants no access to this workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceNameRequest"
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateSubscription",
+        "summary": "Cancel or renew a product subscription",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header; the caller needs a matching workspace scope. Applies the requested Stripe subscription action; cancellations may attach the configured retention coupon.",
+        "tags": [
+          "Billing"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "action",
+            "in": "query",
+            "required": true,
+            "description": "`cancel`, `cancel_schedule` or `renew`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": true,
+            "description": "Product id: `carmen`, `freeflow` or `pr`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "subscription_type",
+            "in": "query",
+            "required": true,
+            "description": "Subscription type: `carmen`, `carmen_freeflow`, `carmen_go` or `pr`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The workspace with the updated subscription state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workspace"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unknown product, or the workspace has no Stripe billing set up.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or the token grants no access to this workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deleteWorkspace",
+        "summary": "Delete or archive a workspace",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header; the caller needs a matching workspace scope. A *governance* operation: only the owner's own user session may call it — key-minted (machine) bearer tokens are refused with 403 regardless of the key's role. Refused while subscriptions are active or purchased credits remain. A workspace that was ever billed is archived (members and keys deactivated but kept); one that never was is deleted outright with its members and keys.",
+        "tags": [
+          "Workspaces"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The workspace was archived or deleted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Active subscriptions or remaining purchased credits block the deletion.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or the token grants no access to this workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-requires-user-session": true,
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/{workspaceId}/apikey": {
+      "get": {
+        "operationId": "listApiKeys",
+        "summary": "List API keys",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header; the caller needs a matching workspace scope. Paginated, with name search.",
+        "tags": [
+          "API keys"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Page size. Default 10.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "description": "Case-insensitive name prefix filter.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "description": "Name sort order: `asc` or `desc`. Default `asc`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "last_key",
+            "in": "query",
+            "required": false,
+            "description": "The `lastKey` cursor of the previous page.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of API keys.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No such workspace.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or the token grants no access to this workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createApiKey",
+        "summary": "Create an API key",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header; the caller needs a matching workspace scope. Generates the key id and secret value.",
+        "tags": [
+          "API keys"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The created key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKey"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing key name.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or the token grants no access to this workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateApiKeyRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{workspaceId}/apikey/{apiKeyId}": {
+      "get": {
+        "operationId": "getApiKey",
+        "summary": "Get one API key",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header; the caller needs a matching workspace scope.",
+        "tags": [
+          "API keys"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apiKeyId",
+            "in": "path",
+            "required": true,
+            "description": "The API key id.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKey"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No such key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or the token grants no access to this workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "updateApiKey",
+        "summary": "Update an API key",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header; the caller needs a matching workspace scope. Full replacement of name, role and product access; omitted role/products are removed.",
+        "tags": [
+          "API keys"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apiKeyId",
+            "in": "path",
+            "required": true,
+            "description": "The API key id.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The updated key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKey"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing key name, or no such key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or the token grants no access to this workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateApiKeyRequest"
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "rotateApiKey",
+        "summary": "Rotate an API key's secret value",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header; the caller needs a matching workspace scope. Generates a new secret value; everything else is unchanged.",
+        "tags": [
+          "API keys"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apiKeyId",
+            "in": "path",
+            "required": true,
+            "description": "The API key id.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The key with its new secret value.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKey"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No such key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or the token grants no access to this workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deleteApiKey",
+        "summary": "Delete an API key",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header; the caller needs a matching workspace scope.",
+        "tags": [
+          "API keys"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apiKeyId",
+            "in": "path",
+            "required": true,
+            "description": "The API key id.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The key was deleted (empty body)."
+          },
+          "400": {
+            "description": "No such key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or the token grants no access to this workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/{workspaceId}/apikey/{apiKeyId}/usage": {
+      "get": {
+        "operationId": "getApiKeyUsage",
+        "summary": "Get one API key's daily usage",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header; the caller needs a matching workspace scope.",
+        "tags": [
+          "Usage"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apiKeyId",
+            "in": "path",
+            "required": true,
+            "description": "The API key id.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "description": "First day of the range (inclusive), `YYYY-MM-DD` (UTC). Defaults to the start of the current UTC month.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "description": "Last day of the range (inclusive), `YYYY-MM-DD` (UTC). Defaults to today. The range must not exceed 366 days.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The daily usage report of the key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyUsageReport"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed `from`/`to` date or `apiKeyId`, inverted range, or a range longer than 366 days.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or the token grants no access to this workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/{workspaceId}/billing-auth-session": {
+      "get": {
+        "operationId": "createBillingAuthSession",
+        "summary": "Create a Stripe customer session for embedded components",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header; the caller needs a matching workspace scope.",
+        "tags": [
+          "Billing"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "component",
+            "in": "query",
+            "required": false,
+            "description": "The embedded component to enable: `pricing_table` (default) or `buy_button`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": false,
+            "description": "The product being purchased (`carmen`, `pr`, or `freeflow`), used to apply or clear the product PO number.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The customer-session client secret.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingAuthSession"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The workspace has no Stripe billing region, or the requested subscription uses manual invoice collection and cannot be updated in the Stripe portal.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace, or it has no Stripe customer.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or the token grants no access to this workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/{workspaceId}/billing-portal-session": {
+      "get": {
+        "operationId": "createBillingPortalSession",
+        "summary": "Create a Stripe billing-portal session",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header; the caller needs a matching workspace scope. Optionally deep-links into a subscription update or cancel flow.",
+        "tags": [
+          "Billing"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "next_url",
+            "in": "query",
+            "required": false,
+            "description": "Return URL after the portal.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "description": "Deep-link flow: `update` or `cancel` (with the three subscription parameters).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": false,
+            "description": "Product id for the deep-link flow.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "subscription_type",
+            "in": "query",
+            "required": false,
+            "description": "Subscription type for the deep-link flow.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "subscription_id",
+            "in": "query",
+            "required": false,
+            "description": "Stripe subscription id for the deep-link flow.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The billing-portal session URL.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingPortalSession"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The workspace has no Stripe billing region.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace, no Stripe customer, or an unknown product/subscription in the deep-link parameters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or the token grants no access to this workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/{workspaceId}/billing-profile": {
+      "put": {
+        "operationId": "updateWorkspaceBillingProfile",
+        "summary": "Select the billing account and maintain product invoice PO numbers",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header; the caller needs a matching workspace scope. On first use, provisions a Stripe customer and permanently locks the workspace to the selected billing account. Later calls may update or remove each product PO number without changing the region.",
+        "tags": [
+          "Billing"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The saved billing profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingProfile"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input, or an attempt to change a locked region.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or the token grants no access to this workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BillingProfileRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{workspaceId}/events/{api}": {
+      "get": {
+        "operationId": "listStoredEvents",
+        "summary": "List stored events of an API",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header. Returns the stored events of one API of the workspace, paged and time-bounded. Events are retained for 24 hours; `before`/`after` are clamped to the retention window.",
+        "tags": [
+          "Events"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace. Must match the workspace of the bearer token — the authorizer rejects calls for foreign workspaces.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "api",
+            "in": "path",
+            "required": true,
+            "description": "The API whose stored events to list, e.g. `vehicle`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Page size. Default 10, maximum 200.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "description": "Sort order by storage time: `asc` or `desc`. Default `desc`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "description": "Only events stored at or before this epoch-millisecond timestamp. Overrides `after`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "description": "Only events stored at or after this epoch-millisecond timestamp. Defaults to the start of the retention window.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "continuation-token",
+            "in": "query",
+            "required": false,
+            "description": "The `continuationToken` of the previous page, to continue listing.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of stored events (possibly empty).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoredEventPage"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or a token for another workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/{workspaceId}/invoice-preview": {
+      "get": {
+        "operationId": "previewSubscriptionInvoice",
+        "summary": "Preview the next invoice for a metered subscription",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header; the caller needs a matching workspace scope. Combines Stripe's upcoming subscription invoice with the latest complete hourly usage available to the production overage calculator. No Stripe invoice or invoice item is created.",
+        "tags": [
+          "Billing"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": true,
+            "description": "Metered product: `carmen` or `pr`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Best-effort upcoming invoice preview.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoicePreview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The product is not a supported metered subscription.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace, Stripe customer, or matching subscription.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or the token grants no access to this workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/{workspaceId}/storage/hooks": {
+      "get": {
+        "operationId": "listHooks",
+        "summary": "List the webhooks",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header.",
+        "tags": [
+          "Hooks"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace. Must match the workspace of the bearer token — the authorizer rejects calls for foreign workspaces.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The workspace's webhooks (may be empty).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HookList"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or a token for another workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createHook",
+        "summary": "Register a webhook",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header. Creates the SNS subscription and sends the confirmation request to the endpoint; the hook stays `pending_confirmation` until the endpoint confirms it. Re-posting a pending URL resends the confirmation. At most 10 hooks per workspace.",
+        "tags": [
+          "Hooks"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace. Must match the workspace of the bearer token — the authorizer rejects calls for foreign workspaces.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The registered hook, pending confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hook"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No API subscribed, storage disabled for a subscribed API, malformed URL, the URL is already registered, or the workspace hook limit (10) is reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or a token for another workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHookRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{workspaceId}/storage/hooks/{hookUrl}": {
+      "get": {
+        "operationId": "getHook",
+        "summary": "Get one webhook",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header.",
+        "tags": [
+          "Hooks"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace. Must match the workspace of the bearer token — the authorizer rejects calls for foreign workspaces.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hookUrl",
+            "in": "path",
+            "required": true,
+            "description": "The URL-encoded webhook endpoint URL, matched case-insensitively.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The webhook.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hook"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No webhook with this URL.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or a token for another workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "updateHook",
+        "summary": "Update a webhook's API subscriptions",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header.",
+        "tags": [
+          "Hooks"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace. Must match the workspace of the bearer token — the authorizer rejects calls for foreign workspaces.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hookUrl",
+            "in": "path",
+            "required": true,
+            "description": "The URL-encoded webhook endpoint URL, matched case-insensitively.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The updated webhook.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hook"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No webhook with this URL, the update would leave the hook without APIs, or storage is disabled for a subscribed API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or a token for another workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HookApisPatch"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteHook",
+        "summary": "Delete a webhook",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header. Unsubscribes the endpoint. Deleting the last hook also removes the workspace topic. Idempotent for already-deleted hooks; hooks still pending confirmation cannot be deleted.",
+        "tags": [
+          "Hooks"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace. Must match the workspace of the bearer token — the authorizer rejects calls for foreign workspaces.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hookUrl",
+            "in": "path",
+            "required": true,
+            "description": "The URL-encoded webhook endpoint URL, matched case-insensitively.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The webhook was deleted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The hook is still pending confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or a token for another workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/{workspaceId}/storage/status": {
+      "get": {
+        "operationId": "getStorageStatus",
+        "summary": "Get the storage settings",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header. Returns the workspace's per-API storage toggles and its SNS topic ARN (when webhooks exist).",
+        "tags": [
+          "Storage"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace. Must match the workspace of the bearer token — the authorizer rejects calls for foreign workspaces.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The current storage settings.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageStatus"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or a token for another workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "updateStorageStatus",
+        "summary": "Enable or disable event storage per API",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header. Applies the requested toggles. Disabling an API cascades onto the webhooks: the API is removed from every hook's subscription, hooks left without APIs are deleted, and the workspace topic is removed with its last hook.",
+        "tags": [
+          "Storage"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace. Must match the workspace of the bearer token — the authorizer rejects calls for foreign workspaces.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The storage settings after the update.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageStatus"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "One or more API names are invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or a token for another workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "API name → desired storage state.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorageStatusPatch"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{workspaceId}/transfer/{userId}": {
+      "patch": {
+        "operationId": "transferWorkspaceOwnership",
+        "summary": "Transfer workspace ownership",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header; the caller needs a matching workspace scope. A *governance* operation: only the owner's own user session may call it — key-minted (machine) bearer tokens are refused with 403 regardless of the key's role. Only the owner may transfer, and only to an active `ADMIN` member.",
+        "tags": [
+          "Workspaces"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "Cognito user id of the new owner.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ownership was transferred.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The caller is not the owner, or the target is not an active admin member.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or the token grants no access to this workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-requires-user-session": true,
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/{workspaceId}/usage": {
+      "get": {
+        "operationId": "getWorkspaceUsage",
+        "summary": "Get the workspace's daily usage",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header; the caller needs a matching workspace scope. Aggregated across all API keys of the workspace.",
+        "tags": [
+          "Usage"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "description": "First day of the range (inclusive), `YYYY-MM-DD` (UTC). Defaults to the start of the current UTC month.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "description": "Last day of the range (inclusive), `YYYY-MM-DD` (UTC). Defaults to today. The range must not exceed 366 days.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The daily usage report.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageReport"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed `from`/`to` date, inverted range, or a range longer than 366 days.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or the token grants no access to this workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/{workspaceId}/usage-cap": {
+      "put": {
+        "operationId": "updateWorkspaceUsageCap",
+        "summary": "Turn the usage hard cap (\"Stop at plan limit\") on or off",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header; the caller needs a matching workspace scope. Per metered product. While on, recognition requests are rejected (HTTP 403 at the gateway within a minute, `429 Limit exceeded` from the API until then) once the lookups included in the plan are used up in the billing period, and no overage is charged for that period from the moment the cap was switched on; optionally the workspace's prepaid credits are used instead. Overage already accumulated before enabling stays billable. Requires a signed-in user session (not an API-key-minted token).",
+        "tags": [
+          "Billing"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The stored setting and the real-time cap status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageCapResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input, no active subscription for the product, or the included lookup count is unknown.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or the token grants no access to this workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-requires-user-session": true,
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsageCapRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{workspaceId}/user": {
+      "get": {
+        "operationId": "listWorkspaceUsers",
+        "summary": "List workspace members",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header; the caller needs a matching workspace scope. Members and pending invitations, enriched with Cognito names.",
+        "tags": [
+          "Members"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Filter: `all`, `active`, `pending` or `rejected`. Default `all`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "description": "Filter: `all`, `OWNER`, `ADMIN`, `EDITOR` or `ACCOUNTANT`. Default `all`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "required": false,
+            "description": "Sort field: `name`, `email`, `role`, `createdAt` or `acceptedAt`. Default `createdAt`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "description": "Sort direction: `asc` or `desc`. Default `asc`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The members.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceUserList"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or the token grants no access to this workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "inviteWorkspaceUser",
+        "summary": "Invite a user by email",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header; the caller needs a matching workspace scope. Creates a pending membership and sends the invitation email.",
+        "tags": [
+          "Members"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The invitation was sent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationSentResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid email, `OWNER` requested, or the email already has an invitation or access.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or the token grants no access to this workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteUserRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{workspaceId}/user/{userId}": {
+      "get": {
+        "operationId": "getWorkspaceUser",
+        "summary": "Get one workspace member",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header; the caller needs a matching workspace scope.",
+        "tags": [
+          "Members"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "The member (Cognito user id).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The member.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceUser"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace or member.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or the token grants no access to this workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "updateWorkspaceUserRole",
+        "summary": "Update a member's role",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header; the caller needs a matching workspace scope. Only active members can be updated; the owner's role cannot be changed.",
+        "tags": [
+          "Members"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "The member (Cognito user id).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The role was updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing role, `OWNER` requested, the target is the owner, or the member is not active.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or the token grants no access to this workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserRoleRequest"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "removeWorkspaceUser",
+        "summary": "Remove a member or cancel an invitation",
+        "description": "Authenticated with the workspace bearer token in the `Authorization` header; the caller needs a matching workspace scope. Pending invitations are cancelled; active members are removed. The owner cannot be removed.",
+        "tags": [
+          "Members"
+        ],
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "description": "The workspace.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "The member (Cognito user id).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The member was removed or the invitation cancelled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The target is the workspace owner.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace or member.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing or invalid bearer token, or the token grants no access to this workspace (rejected by the authorizer).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected backend failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApiKey": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "type": "string",
+            "description": "The owning workspace."
+          },
+          "apiKeyId": {
+            "type": "string",
+            "description": "The API key id."
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name."
+          },
+          "value": {
+            "type": "string",
+            "description": "The secret API key value (send as `x-api-key`)."
+          },
+          "role": {
+            "type": "string",
+            "description": "Workspace-management role of the key, when it may call the workspace API itself. Known values: `ADMIN`, `EDITOR`, `ACCOUNTANT`; others may appear."
+          },
+          "products": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Whether the key may call the product."
+                },
+                "limits": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "number"
+                  },
+                  "description": "Per-subscription-type call limits (e.g. `carmen_freeflow`, `carmen_go`)."
+                },
+                "apis": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object",
+                    "properties": {
+                      "apiVersion": {
+                        "type": "string",
+                        "description": "Pinned API version, if any."
+                      },
+                      "engineParameterOverrides": {
+                        "type": "object",
+                        "properties": {},
+                        "description": "Engine parameter overrides, if any."
+                      }
+                    }
+                  },
+                  "description": "Per-API settings of the product (e.g. `vehicle`, `transport`, `pr22`)."
+                }
+              },
+              "required": [
+                "enabled"
+              ],
+              "description": "The key's access to one product."
+            },
+            "description": "Product access per product id (`carmen`, `freeflow`, `pr`)."
+          }
+        },
+        "required": [
+          "workspaceId",
+          "apiKeyId",
+          "name",
+          "value"
+        ],
+        "description": "An API key."
+      },
+      "ApiKeyPage": {
+        "type": "object",
+        "properties": {
+          "list": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiKey"
+            },
+            "description": "The API keys of this page."
+          },
+          "lastKey": {
+            "type": "string",
+            "description": "Opaque pagination cursor for the next page (`last_key` query parameter); `null` on the last page.",
+            "nullable": true
+          }
+        },
+        "required": [
+          "list",
+          "lastKey"
+        ],
+        "description": "One page of API keys."
+      },
+      "ApiKeyUsageReport": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "type": "string",
+            "description": "The workspace the usage belongs to."
+          },
+          "apiKeyId": {
+            "type": "string",
+            "description": "The API key the report is scoped to."
+          },
+          "from": {
+            "type": "string",
+            "description": "First reported day (inclusive), `YYYY-MM-DD` (UTC)."
+          },
+          "to": {
+            "type": "string",
+            "description": "Last reported day (inclusive), `YYYY-MM-DD` (UTC)."
+          },
+          "totalQuantity": {
+            "type": "integer",
+            "description": "Sum of all daily quantities in the range."
+          },
+          "days": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "day": {
+                  "type": "string",
+                  "description": "The UTC day, `YYYY-MM-DD`."
+                },
+                "quantity": {
+                  "type": "integer",
+                  "description": "Total billable calls that day."
+                },
+                "byProduct": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "number"
+                  },
+                  "description": "Quantity per product id (e.g. `carmen`, `freeflow`, `pr`)."
+                },
+                "byApi": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "number"
+                  },
+                  "description": "Quantity per API name (e.g. `vehicle`, `transport`)."
+                }
+              }
+            },
+            "description": "One entry per day with recorded usage, ascending."
+          },
+          "cap": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Whether the usage hard cap (\"Stop at plan limit\") is on for the product."
+                },
+                "useCredits": {
+                  "type": "boolean",
+                  "description": "Whether prepaid credits are used after the limit."
+                },
+                "included": {
+                  "type": "number",
+                  "description": "Lookups included in the current billing period."
+                },
+                "used": {
+                  "type": "number",
+                  "description": "Billable lookups used so far in the period (real time, all API keys)."
+                },
+                "remaining": {
+                  "type": "number",
+                  "description": "`max(0, included - used)`."
+                },
+                "creditsRemaining": {
+                  "type": "number",
+                  "description": "Prepaid credit balance of the product."
+                },
+                "periodId": {
+                  "type": "string",
+                  "description": "The current billing period (`<start>_<end>`)."
+                },
+                "periodEnd": {
+                  "type": "string",
+                  "description": "When the period renews, `YYYY-MM-DD` (UTC)."
+                },
+                "reached": {
+                  "type": "boolean",
+                  "description": "`enabled` and `used >= included`: requests are rejected (or, with `useCredits`, paid from prepaid credits) until the period renews."
+                }
+              },
+              "required": [
+                "enabled",
+                "useCredits",
+                "included",
+                "used",
+                "remaining",
+                "creditsRemaining",
+                "periodId",
+                "periodEnd",
+                "reached"
+              ],
+              "description": "The real-time billing-period status of one metered product."
+            },
+            "description": "Real-time billing-period status per subscribed metered product id (`carmen`, `pr`): lookups used and remaining in the current period and the usage hard cap state. Workspace-level (all API keys) and current to the second, unlike `days`. Empty for workspaces without a metered subscription."
+          }
+        },
+        "required": [
+          "workspaceId",
+          "from",
+          "to",
+          "totalQuantity",
+          "days"
+        ],
+        "description": "Daily-rollup usage report. Days without usage are omitted (they are not zero-filled)."
+      },
+      "BillingAuthSession": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "The Stripe customer-session client secret for the embedded component."
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "BillingPortalSession": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The Stripe billing-portal session URL to redirect to."
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "BillingProfile": {
+        "type": "object",
+        "properties": {
+          "stripeRegion": {
+            "type": "string",
+            "enum": [
+              "eu",
+              "us"
+            ],
+            "description": "Locked Stripe billing account."
+          },
+          "stripeCustomerId": {
+            "type": "string",
+            "description": "Provisioned Stripe customer id."
+          },
+          "billingPONumbers": {
+            "type": "object",
+            "properties": {
+              "carmen": {
+                "type": "string",
+                "description": "PO number for Carmen Recognition Service invoices."
+              },
+              "pr": {
+                "type": "string",
+                "description": "PO number for Carmen ID Recognition Service invoices."
+              }
+            }
+          }
+        },
+        "required": [
+          "stripeRegion",
+          "stripeCustomerId"
+        ]
+      },
+      "BillingProfileRequest": {
+        "type": "object",
+        "properties": {
+          "stripeRegion": {
+            "type": "string",
+            "enum": [
+              "eu",
+              "us"
+            ],
+            "description": "Billing account selected before the first purchase. Once stored, it cannot be changed."
+          },
+          "poNumber": {
+            "type": "string",
+            "description": "Optional purchase order number for productId. Send an empty string to remove it."
+          },
+          "productId": {
+            "type": "string",
+            "enum": [
+              "carmen",
+              "pr"
+            ],
+            "description": "Product whose invoices use the PO number."
+          }
+        }
+      },
+      "CreateApiKeyRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Display name."
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "EDITOR",
+              "ACCOUNTANT"
+            ],
+            "description": "Workspace-management role of the key; omit for none."
+          },
+          "products": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Whether the key may call the product."
+                },
+                "limits": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "number"
+                  },
+                  "description": "Per-subscription-type call limits (e.g. `carmen_freeflow`, `carmen_go`)."
+                },
+                "apis": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object",
+                    "properties": {
+                      "apiVersion": {
+                        "type": "string",
+                        "description": "Pinned API version, if any."
+                      },
+                      "engineParameterOverrides": {
+                        "type": "object",
+                        "properties": {},
+                        "description": "Engine parameter overrides, if any."
+                      }
+                    }
+                  },
+                  "description": "Per-API settings of the product (e.g. `vehicle`, `transport`, `pr22`)."
+                }
+              },
+              "required": [
+                "enabled"
+              ],
+              "description": "The key's access to one product."
+            },
+            "description": "Product access per product id; omit for none."
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "description": "The new key; id and secret value are generated."
+      },
+      "CreateHookRequest": {
+        "type": "object",
+        "properties": {
+          "hookUrl": {
+            "type": "string",
+            "description": "The webhook endpoint URL; must start with `http://` or `https://`."
+          },
+          "apis": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "description": "API name → subscribe flag. At least one API must be `true`; each subscribed API (except `usages`) must have storage enabled."
+          }
+        },
+        "required": [
+          "hookUrl",
+          "apis"
+        ]
+      },
+      "DeleteResult": {
+        "type": "string",
+        "description": "Always the literal string `\"OK\"`."
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Human-readable error description."
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "description": "Error envelope."
+      },
+      "Hook": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending_confirmation",
+              "confirmed",
+              "deleted"
+            ],
+            "description": "Subscription state. New hooks start `pending_confirmation` until the endpoint confirms the SNS subscription."
+          },
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "http",
+              "https"
+            ],
+            "description": "Derived from the hook URL."
+          },
+          "hookUrl": {
+            "type": "string",
+            "description": "The webhook endpoint URL (stored lowercased)."
+          },
+          "apis": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "description": "The APIs the hook subscribes to; only subscribed APIs are listed (value always `true`)."
+          },
+          "topicName": {
+            "type": "string",
+            "description": "The workspace SNS topic name."
+          },
+          "topicArn": {
+            "type": "string",
+            "description": "The workspace SNS topic ARN."
+          }
+        },
+        "required": [
+          "status",
+          "protocol",
+          "hookUrl",
+          "apis",
+          "topicName",
+          "topicArn"
+        ],
+        "description": "A webhook registration."
+      },
+      "HookApisPatch": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "boolean"
+        },
+        "description": "API name → subscribe flag. The resulting subscription must keep at least one API; subscribed APIs (except `usages`) must have storage enabled."
+      },
+      "HookList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Hook"
+        },
+        "description": "The workspace's webhooks (may be empty)."
+      },
+      "InvitationSentResult": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "type": "string",
+            "description": "The workspace."
+          },
+          "email": {
+            "type": "string",
+            "description": "The invited email address."
+          },
+          "role": {
+            "type": "string",
+            "description": "The offered role. Known values: `ADMIN`, `EDITOR`, `ACCOUNTANT`; others may appear."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending"
+            ],
+            "description": "Always `pending`."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable confirmation."
+          }
+        },
+        "required": [
+          "workspaceId",
+          "email",
+          "role",
+          "status",
+          "message"
+        ]
+      },
+      "InviteUserRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "The email address to invite."
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "EDITOR",
+              "ACCOUNTANT"
+            ],
+            "description": "The offered role. Defaults to `EDITOR`; `OWNER` cannot be invited."
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "InvoicePreview": {
+        "type": "object",
+        "properties": {
+          "generatedAt": {
+            "type": "number",
+            "description": "Preview generation time, epoch seconds."
+          },
+          "usageThrough": {
+            "type": "number",
+            "description": "Hourly query boundary, epoch seconds; only usage already present in Stripe is included."
+          },
+          "invoiceAt": {
+            "type": "number",
+            "description": "Expected current billing-period end, epoch seconds."
+          },
+          "productId": {
+            "type": "string",
+            "enum": [
+              "carmen",
+              "pr"
+            ],
+            "description": "The metered product."
+          },
+          "subscriptionId": {
+            "type": "string",
+            "description": "Stripe subscription id."
+          },
+          "cancelAtPeriodEnd": {
+            "type": "boolean",
+            "description": "Whether the subscription ends after the current billing period."
+          },
+          "usage": {
+            "type": "object",
+            "properties": {
+              "dimension": {
+                "type": "string",
+                "description": "The subscribed tier/dimension."
+              },
+              "total": {
+                "type": "number",
+                "description": "Usage reported to Stripe so far."
+              },
+              "included": {
+                "type": "number",
+                "description": "Usage included in the subscription."
+              },
+              "overage": {
+                "type": "number",
+                "description": "Billable usage above the included allowance."
+              },
+              "creditPaid": {
+                "type": "number",
+                "description": "Lookups paid from prepaid credits after the hard cap; never billed as overage."
+              },
+              "waived": {
+                "type": "number",
+                "description": "Overage above the allowance the usage hard cap waived."
+              },
+              "capEnabled": {
+                "type": "boolean",
+                "description": "Whether the usage hard cap is on for the product."
+              }
+            },
+            "required": [
+              "dimension",
+              "total",
+              "included",
+              "overage",
+              "creditPaid",
+              "waived",
+              "capEnabled"
+            ]
+          },
+          "invoice": {
+            "type": "object",
+            "properties": {
+              "currency": {
+                "type": "string",
+                "description": "Three-letter lowercase ISO currency code."
+              },
+              "subtotal": {
+                "type": "number",
+                "description": "Subtotal in the currency minor unit."
+              },
+              "discount": {
+                "type": "number",
+                "description": "Total discounts in the currency minor unit."
+              },
+              "tax": {
+                "type": "number",
+                "description": "Total tax in the currency minor unit."
+              },
+              "total": {
+                "type": "number",
+                "description": "Invoice total in the currency minor unit."
+              },
+              "amountDue": {
+                "type": "number",
+                "description": "Expected amount due in the currency minor unit."
+              },
+              "automaticTaxStatus": {
+                "type": "string",
+                "description": "Stripe automatic-tax calculation status."
+              },
+              "lines": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "description": {
+                      "type": "string",
+                      "description": "Invoice line description."
+                    },
+                    "quantity": {
+                      "type": "number",
+                      "description": "Line quantity."
+                    },
+                    "subtotal": {
+                      "type": "number",
+                      "description": "Line subtotal in the currency minor unit."
+                    },
+                    "discount": {
+                      "type": "number",
+                      "description": "Line discount in the currency minor unit."
+                    },
+                    "tax": {
+                      "type": "number",
+                      "description": "Line tax in the currency minor unit."
+                    },
+                    "currency": {
+                      "type": "string",
+                      "description": "Three-letter lowercase ISO currency code."
+                    },
+                    "periodStart": {
+                      "type": "number",
+                      "description": "Line period start, epoch seconds."
+                    },
+                    "periodEnd": {
+                      "type": "number",
+                      "description": "Line period end, epoch seconds."
+                    },
+                    "overage": {
+                      "type": "boolean",
+                      "description": "Whether this is the calculated usage line."
+                    }
+                  },
+                  "required": [
+                    "description",
+                    "subtotal",
+                    "discount",
+                    "tax",
+                    "currency",
+                    "periodStart",
+                    "periodEnd",
+                    "overage"
+                  ]
+                },
+                "description": "Preview invoice lines."
+              }
+            },
+            "required": [
+              "currency",
+              "subtotal",
+              "discount",
+              "tax",
+              "total",
+              "amountDue",
+              "lines"
+            ]
+          }
+        },
+        "required": [
+          "generatedAt",
+          "usageThrough",
+          "invoiceAt",
+          "productId",
+          "subscriptionId",
+          "cancelAtPeriodEnd",
+          "usage",
+          "invoice"
+        ]
+      },
+      "MessageResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Human-readable confirmation."
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "StorageStatus": {
+        "type": "object",
+        "properties": {
+          "enabledApis": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "description": "APIs with event storage enabled; only enabled APIs are listed (value always `true`)."
+          },
+          "topicArn": {
+            "type": "string",
+            "description": "The workspace SNS topic ARN when at least one webhook exists; `null` otherwise.",
+            "nullable": true
+          }
+        },
+        "required": [
+          "enabledApis",
+          "topicArn"
+        ],
+        "description": "The workspace's storage settings."
+      },
+      "StorageStatusPatch": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "boolean"
+        },
+        "description": "API name → desired storage state (`true` to enable, `false` to disable). Disabling an API removes it from all hooks; hooks left without APIs are deleted."
+      },
+      "StoredEventPage": {
+        "type": "object",
+        "properties": {
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "event": {
+                  "type": "object",
+                  "properties": {},
+                  "description": "The stored recognition event payload, as produced by the recognition API."
+                },
+                "attachmentURLs": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Pre-signed URLs of stored attachments (e.g. images)."
+                },
+                "creationTimestamp": {
+                  "type": "number",
+                  "description": "When the event was stored, epoch milliseconds."
+                },
+                "requestId": {
+                  "type": "string",
+                  "description": "The originating request id."
+                },
+                "api": {
+                  "type": "string",
+                  "description": "The API that produced the event."
+                },
+                "customData": {
+                  "type": "string",
+                  "description": "The caller-supplied custom data of the original request, if any."
+                },
+                "userAgent": {
+                  "type": "string",
+                  "description": "User agent of the original request."
+                },
+                "ipAddress": {
+                  "type": "string",
+                  "description": "Caller IP address of the original request."
+                }
+              },
+              "required": [
+                "creationTimestamp",
+                "requestId",
+                "api"
+              ]
+            },
+            "description": "The stored events of this page."
+          },
+          "continuationToken": {
+            "type": "string",
+            "description": "Opaque token for the next page; `null` when there are no more events. Pass it back as the `continuation-token` query parameter.",
+            "nullable": true
+          }
+        },
+        "required": [
+          "events",
+          "continuationToken"
+        ],
+        "description": "One page of stored events."
+      },
+      "TransferResult": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "type": "string",
+            "description": "The transferred workspace."
+          },
+          "previousOwner": {
+            "type": "string",
+            "description": "Cognito user id of the previous owner."
+          },
+          "newOwner": {
+            "type": "string",
+            "description": "Cognito user id of the new owner."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable confirmation."
+          }
+        },
+        "required": [
+          "workspaceId",
+          "previousOwner",
+          "newOwner",
+          "message"
+        ]
+      },
+      "UpdateApiKeyRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Display name."
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "EDITOR",
+              "ACCOUNTANT"
+            ],
+            "description": "Workspace-management role of the key; omit for none."
+          },
+          "products": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Whether the key may call the product."
+                },
+                "limits": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "number"
+                  },
+                  "description": "Per-subscription-type call limits (e.g. `carmen_freeflow`, `carmen_go`)."
+                },
+                "apis": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object",
+                    "properties": {
+                      "apiVersion": {
+                        "type": "string",
+                        "description": "Pinned API version, if any."
+                      },
+                      "engineParameterOverrides": {
+                        "type": "object",
+                        "properties": {},
+                        "description": "Engine parameter overrides, if any."
+                      }
+                    }
+                  },
+                  "description": "Per-API settings of the product (e.g. `vehicle`, `transport`, `pr22`)."
+                }
+              },
+              "required": [
+                "enabled"
+              ],
+              "description": "The key's access to one product."
+            },
+            "description": "Product access per product id; omit for none."
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "description": "Full replacement: omitted `role`/`products` are removed from the key."
+      },
+      "UpdateUserRoleRequest": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "EDITOR",
+              "ACCOUNTANT"
+            ],
+            "description": "The new role; `OWNER` cannot be assigned (transfer ownership instead)."
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "UsageCapRequest": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "enum": [
+              "carmen",
+              "pr"
+            ],
+            "description": "The metered product."
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "\"Stop at plan limit\": once the lookups included in the plan are used up in a billing period, requests are rejected until the period renews and no overage is charged."
+          },
+          "useCredits": {
+            "type": "boolean",
+            "description": "\"Use prepaid credits after the limit\": keep serving requests from the workspace's prepaid credits once the limit is reached. Defaults to `false`; ignored unless `enabled`."
+          }
+        },
+        "required": [
+          "productId",
+          "enabled"
+        ]
+      },
+      "UsageCapResult": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "enum": [
+              "carmen",
+              "pr"
+            ],
+            "description": "The metered product."
+          },
+          "setting": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean",
+                "description": "Always `true` while stored; disabling removes the setting."
+              },
+              "useCredits": {
+                "type": "boolean",
+                "description": "Whether requests continue from the workspace's prepaid credits once the included lookups are used up (\"Use prepaid credits after the limit\"). Explicit opt-in."
+              },
+              "anchor": {
+                "type": "number",
+                "description": "Usage reference fixed when the cap was switched on (`max(included, used so far)`); overage accumulated before that point stays billable."
+              },
+              "anchorPeriodId": {
+                "type": "string",
+                "description": "The billing period the anchor was taken in (`<start>_<end>`)."
+              },
+              "enabledAt": {
+                "type": "number",
+                "description": "When the cap was switched on, epoch milliseconds."
+              },
+              "enabledBy": {
+                "type": "string",
+                "description": "Cognito user id of who switched it on."
+              }
+            },
+            "required": [
+              "enabled",
+              "useCredits",
+              "anchor",
+              "anchorPeriodId",
+              "enabledAt"
+            ],
+            "description": "A usage hard cap setting."
+          },
+          "status": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether the usage hard cap (\"Stop at plan limit\") is on for the product."
+              },
+              "useCredits": {
+                "type": "boolean",
+                "description": "Whether prepaid credits are used after the limit."
+              },
+              "included": {
+                "type": "number",
+                "description": "Lookups included in the current billing period."
+              },
+              "used": {
+                "type": "number",
+                "description": "Billable lookups used so far in the period (real time, all API keys)."
+              },
+              "remaining": {
+                "type": "number",
+                "description": "`max(0, included - used)`."
+              },
+              "creditsRemaining": {
+                "type": "number",
+                "description": "Prepaid credit balance of the product."
+              },
+              "periodId": {
+                "type": "string",
+                "description": "The current billing period (`<start>_<end>`)."
+              },
+              "periodEnd": {
+                "type": "string",
+                "description": "When the period renews, `YYYY-MM-DD` (UTC)."
+              },
+              "reached": {
+                "type": "boolean",
+                "description": "`enabled` and `used >= included`: requests are rejected (or, with `useCredits`, paid from prepaid credits) until the period renews."
+              }
+            },
+            "required": [
+              "enabled",
+              "useCredits",
+              "included",
+              "used",
+              "remaining",
+              "creditsRemaining",
+              "periodId",
+              "periodEnd",
+              "reached"
+            ],
+            "description": "The real-time billing-period status of one metered product."
+          }
+        },
+        "required": [
+          "productId",
+          "status"
+        ]
+      },
+      "UsageReport": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "type": "string",
+            "description": "The workspace the usage belongs to."
+          },
+          "from": {
+            "type": "string",
+            "description": "First reported day (inclusive), `YYYY-MM-DD` (UTC)."
+          },
+          "to": {
+            "type": "string",
+            "description": "Last reported day (inclusive), `YYYY-MM-DD` (UTC)."
+          },
+          "totalQuantity": {
+            "type": "integer",
+            "description": "Sum of all daily quantities in the range."
+          },
+          "days": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "day": {
+                  "type": "string",
+                  "description": "The UTC day, `YYYY-MM-DD`."
+                },
+                "quantity": {
+                  "type": "integer",
+                  "description": "Total billable calls that day."
+                },
+                "byProduct": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "number"
+                  },
+                  "description": "Quantity per product id (e.g. `carmen`, `freeflow`, `pr`)."
+                },
+                "byApi": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "number"
+                  },
+                  "description": "Quantity per API name (e.g. `vehicle`, `transport`)."
+                }
+              }
+            },
+            "description": "One entry per day with recorded usage, ascending."
+          },
+          "cap": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Whether the usage hard cap (\"Stop at plan limit\") is on for the product."
+                },
+                "useCredits": {
+                  "type": "boolean",
+                  "description": "Whether prepaid credits are used after the limit."
+                },
+                "included": {
+                  "type": "number",
+                  "description": "Lookups included in the current billing period."
+                },
+                "used": {
+                  "type": "number",
+                  "description": "Billable lookups used so far in the period (real time, all API keys)."
+                },
+                "remaining": {
+                  "type": "number",
+                  "description": "`max(0, included - used)`."
+                },
+                "creditsRemaining": {
+                  "type": "number",
+                  "description": "Prepaid credit balance of the product."
+                },
+                "periodId": {
+                  "type": "string",
+                  "description": "The current billing period (`<start>_<end>`)."
+                },
+                "periodEnd": {
+                  "type": "string",
+                  "description": "When the period renews, `YYYY-MM-DD` (UTC)."
+                },
+                "reached": {
+                  "type": "boolean",
+                  "description": "`enabled` and `used >= included`: requests are rejected (or, with `useCredits`, paid from prepaid credits) until the period renews."
+                }
+              },
+              "required": [
+                "enabled",
+                "useCredits",
+                "included",
+                "used",
+                "remaining",
+                "creditsRemaining",
+                "periodId",
+                "periodEnd",
+                "reached"
+              ],
+              "description": "The real-time billing-period status of one metered product."
+            },
+            "description": "Real-time billing-period status per subscribed metered product id (`carmen`, `pr`): lookups used and remaining in the current period and the usage hard cap state. Workspace-level (all API keys) and current to the second, unlike `days`. Empty for workspaces without a metered subscription."
+          }
+        },
+        "required": [
+          "workspaceId",
+          "from",
+          "to",
+          "totalQuantity",
+          "days"
+        ],
+        "description": "Daily-rollup usage report. Days without usage are omitted (they are not zero-filled)."
+      },
+      "ValidationError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Human-readable error description."
+          },
+          "issues": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "The offending parameter, e.g. `from`."
+                },
+                "message": {
+                  "type": "string",
+                  "description": "What is wrong with it."
+                }
+              }
+            },
+            "description": "Per-parameter validation problems (present on query validation errors)."
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "description": "Validation-error envelope."
+      },
+      "Workspace": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "type": "string",
+            "description": "The workspace id."
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name."
+          },
+          "owner": {
+            "type": "string",
+            "description": "Cognito user id of the owner."
+          },
+          "ownerEmail": {
+            "type": "string",
+            "description": "Email address of the owner."
+          },
+          "stripeCustomerId": {
+            "type": "string",
+            "description": "Stripe customer id, once ever billed via Stripe."
+          },
+          "billingPONumbers": {
+            "type": "object",
+            "properties": {
+              "carmen": {
+                "type": "string",
+                "description": "PO number printed on Carmen Recognition Service invoices."
+              },
+              "pr": {
+                "type": "string",
+                "description": "PO number printed on Carmen ID Recognition Service invoices."
+              }
+            }
+          },
+          "marketplaceCustomerId": {
+            "type": "string",
+            "description": "AWS Marketplace customer id, if any."
+          },
+          "stripeRegion": {
+            "type": "string",
+            "enum": [
+              "eu",
+              "us"
+            ],
+            "description": "The Stripe billing account region."
+          },
+          "marketplaceAccount": {
+            "type": "string",
+            "description": "AWS Marketplace account, if any."
+          },
+          "freeCallCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            },
+            "description": "Remaining free/credit calls per product id."
+          },
+          "usageCaps": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Always `true` while stored; disabling removes the setting."
+                },
+                "useCredits": {
+                  "type": "boolean",
+                  "description": "Whether requests continue from the workspace's prepaid credits once the included lookups are used up (\"Use prepaid credits after the limit\"). Explicit opt-in."
+                },
+                "anchor": {
+                  "type": "number",
+                  "description": "Usage reference fixed when the cap was switched on (`max(included, used so far)`); overage accumulated before that point stays billable."
+                },
+                "anchorPeriodId": {
+                  "type": "string",
+                  "description": "The billing period the anchor was taken in (`<start>_<end>`)."
+                },
+                "enabledAt": {
+                  "type": "number",
+                  "description": "When the cap was switched on, epoch milliseconds."
+                },
+                "enabledBy": {
+                  "type": "string",
+                  "description": "Cognito user id of who switched it on."
+                }
+              },
+              "required": [
+                "enabled",
+                "useCredits",
+                "anchor",
+                "anchorPeriodId",
+                "enabledAt"
+              ],
+              "description": "A usage hard cap setting."
+            },
+            "description": "The usage hard cap (\"Stop at plan limit\") per metered product id (`carmen`, `pr`); absent for products without a cap. The real-time status (used, remaining, reached) is on the usage routes."
+          },
+          "subscriptions": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Stripe subscription id."
+                },
+                "currentPeriodStart": {
+                  "type": "number",
+                  "description": "Current period start, epoch **seconds**."
+                },
+                "currentPeriodEnd": {
+                  "type": "number",
+                  "description": "Current period end, epoch **seconds**."
+                },
+                "cancelAtPeriodEnd": {
+                  "type": "boolean",
+                  "description": "Whether the subscription ends at period end."
+                },
+                "dimension": {
+                  "type": "string",
+                  "description": "Subscribed dimension id."
+                },
+                "limit": {
+                  "type": "integer",
+                  "description": "Request allowance of the dimension."
+                },
+                "quantity": {
+                  "type": "integer",
+                  "description": "Subscribed quantity."
+                },
+                "subscriptionScheduleId": {
+                  "type": "string",
+                  "description": "Stripe subscription schedule id, when a downgrade/change is scheduled."
+                },
+                "nextDimension": {
+                  "type": "string",
+                  "description": "Dimension taking effect next period, if scheduled."
+                },
+                "nextLimit": {
+                  "type": "integer",
+                  "description": "Allowance taking effect next period, if scheduled."
+                },
+                "nextQuantity": {
+                  "type": "integer",
+                  "description": "Quantity taking effect next period, if scheduled."
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "description": "An active product subscription."
+            },
+            "description": "Active subscriptions per subscription type (e.g. `carmen`, `carmen_freeflow`, `carmen_go`, `pr`)."
+          },
+          "stripeCustomer": {
+            "type": "object",
+            "properties": {},
+            "description": "The raw Stripe customer object, when available."
+          },
+          "hasPendingPayments": {
+            "type": "boolean",
+            "description": "Whether the Stripe customer has payment intents awaiting completion."
+          }
+        },
+        "required": [
+          "workspaceId",
+          "name",
+          "owner"
+        ],
+        "description": "A workspace."
+      },
+      "WorkspaceNameRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The workspace display name."
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "WorkspaceUser": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "type": "string",
+            "description": "The workspace."
+          },
+          "userId": {
+            "type": "string",
+            "description": "Cognito user id (a placeholder id while the invitation is pending)."
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address."
+          },
+          "role": {
+            "type": "string",
+            "description": "Role in the workspace. Known values: `OWNER`, `ADMIN`, `EDITOR`, `ACCOUNTANT`; others may appear."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "pending",
+              "rejected"
+            ],
+            "description": "Membership state."
+          },
+          "createdAt": {
+            "type": "number",
+            "description": "Invitation time, epoch milliseconds."
+          },
+          "acceptedAt": {
+            "type": "number",
+            "description": "Acceptance time, epoch milliseconds."
+          },
+          "rejectedAt": {
+            "type": "number",
+            "description": "Rejection time, epoch milliseconds."
+          },
+          "invitedBy": {
+            "type": "string",
+            "description": "Cognito user id of the inviter."
+          },
+          "isOwner": {
+            "type": "boolean",
+            "description": "Whether this member owns the workspace."
+          },
+          "name": {
+            "type": "string",
+            "description": "Full name (from Cognito, active members only)."
+          },
+          "givenName": {
+            "type": "string",
+            "description": "Given name (from Cognito)."
+          },
+          "familyName": {
+            "type": "string",
+            "description": "Family name (from Cognito)."
+          },
+          "inviterName": {
+            "type": "string",
+            "description": "Full name of the inviter (from Cognito)."
+          }
+        },
+        "required": [
+          "workspaceId",
+          "userId",
+          "role",
+          "status",
+          "isOwner"
+        ],
+        "description": "A workspace member or pending invitation."
+      },
+      "WorkspaceUserList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/WorkspaceUser"
+        },
+        "description": "The members of the workspace."
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

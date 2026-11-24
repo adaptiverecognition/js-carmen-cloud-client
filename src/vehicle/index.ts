@@ -1,13 +1,13 @@
 import fs from "fs";
 import FormData from "form-data";
-import axios from "axios";
-import axiosRetry from 'axios-retry';
+import { AxiosInstance } from "axios";
 import urlcat from "urlcat";
-import isStream from "isstream";
 import { CarmenAPIConfigError } from "../errors";
+import { createHttpClient, selectApiBaseUrl } from "../http";
 import { VehicleAPIOptions } from "./options";
 import { VehicleAPIResponse } from "./response";
 import { Stream } from "stream";
+import { warnOnApiVersionMismatch } from "../version";
 
 export * from "./options";
 export * from "./response";
@@ -16,8 +16,9 @@ export * from "./response";
  * A client for interacting with the Carmen Cloud Vehicle API.
  */
 export class VehicleAPIClient {
-  supportedAPIVersion = "1.4.1";
+  supportedAPIVersion = "1.4.2";
   private apiUrl: string;
+  private http: AxiosInstance;
 
   /**
    * Instantiates the client with a fixed set of options.
@@ -25,10 +26,7 @@ export class VehicleAPIClient {
    * @param options An object containing configuration options for the client.
    */
   constructor(private options: VehicleAPIOptions) {
-    axiosRetry(axios, {
-      retries: options.retryCount || 3,
-      retryDelay: axiosRetry.exponentialDelay
-    });
+    this.http = createHttpClient(options);
     this.apiUrl = this.getParametrizedApiUrl();
   }
 
@@ -44,12 +42,10 @@ export class VehicleAPIClient {
   ): Promise<VehicleAPIResponse> {
     const formData = this.createFormData(imageDataOrPath);
     const headers = this.createRequestHeaders(formData);
-    const httpResponse = await axios.post(this.apiUrl, formData, { headers });
+    const httpResponse = await this.http.post(this.apiUrl, formData, { headers });
     const response = httpResponse.data as VehicleAPIResponse;
 
-    if (response.version !== this.supportedAPIVersion) {
-      console.warn(`WARNING: API version mismatch. Expected ${this.supportedAPIVersion}, got ${response.version}.`);
-    }
+    warnOnApiVersionMismatch(this.supportedAPIVersion, response.version);
 
     return response;
   }
@@ -57,7 +53,7 @@ export class VehicleAPIClient {
   private getImageBytes(
     imagePathOrBuffer: string | Buffer | fs.ReadStream
   ): Buffer | Stream {
-    if (isStream(imagePathOrBuffer) || Buffer.isBuffer(imagePathOrBuffer)) {
+    if (imagePathOrBuffer instanceof Stream || Buffer.isBuffer(imagePathOrBuffer)) {
       return imagePathOrBuffer as Buffer | Stream;
     } else if (
       typeof imagePathOrBuffer === "string" &&
@@ -136,28 +132,10 @@ export class VehicleAPIClient {
   }
 
   private getParametrizedApiUrl() {
-    const baseUrl = this.selectApiBaseUrl();
+    const baseUrl = selectApiBaseUrl(this.options);
     return urlcat(baseUrl, "/vehicle/:region", {
       region: this.options.inputImageLocation.region.toLowerCase(),
     });
   }
 
-  private selectApiBaseUrl() {
-    if (this.options.endpoint) {
-      return this.options.endpoint;
-    }
-    if (this.options.cloudServiceRegion === "EU") {
-      return "https://eu-central-1.api.carmencloud.com";
-    }
-    if (this.options.cloudServiceRegion === "US") {
-      return "https://us-east-1.api.carmencloud.com";
-    }
-    if (this.options.cloudServiceRegion && this.options.cloudServiceRegion !== "AUTO") {
-      throw new CarmenAPIConfigError(
-        `Invalid cloud service region: '${this.options.cloudServiceRegion}'.`
-      );
-    }
-    // cloudServiceRegion is not set or AUTO, use latency-based routing
-    return "https://api.carmencloud.com";
-  }
 }
